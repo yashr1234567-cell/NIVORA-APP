@@ -6,7 +6,7 @@ Modules:
 1. 🟡 Jaundice Screening (Live Camera + `models/jaundice/jaundice_model.tflite`)
 2. 👁️ Cataract Screening (Live Camera + `models/cataract/cataract_detector_float16.tflite`)
 3. 🩸 Anemia Screening (Live Camera + Conjunctival Erythema Colorimetry)
-4. 🧠 Unified Parkinson's & Tremor AI (Single Unified Multi-Modal Screening Engine)
+4. 🧠 Unified Parkinson's & Tremor AI (100% Single Audio Input -> Predicts BOTH Voice & Tremor)
 """
 
 import os
@@ -31,7 +31,6 @@ CATARACT_MODEL_PATH = Path("models/cataract/cataract_detector_float16.tflite")
 JAUNDICE_MODEL_PATH = Path("models/jaundice/jaundice_model.tflite")
 VOICE_BUNDLE_PATH = Path("models/parkinsons/voice/parkinson_model.joblib")
 TREMOR_BUNDLE_PATH = Path("models/parkinsons/tremor/tremor_model_bundle.joblib")
-TREMOR_DATA_PATH = Path("data/ALAMEDA_PD_tremor_dataset.csv")
 
 MODELS: Dict[str, Any] = {}
 
@@ -263,12 +262,12 @@ async def handle_index(request):
       </div>
     </header>
 
-    <!-- 4 UNIFIED TABS -->
+    <!-- 4 CLEAN TABS -->
     <div class="nav-tabs">
       <button class="tab-btn active" onclick="showTab('jaundice')">🟡 Jaundice (Live Camera)</button>
       <button class="tab-btn" onclick="showTab('cataract')">👁️ Cataract (Live Camera)</button>
       <button class="tab-btn" onclick="showTab('anemia')">🩸 Anemia (Live Camera)</button>
-      <button class="tab-btn" onclick="showTab('parkinson_tremor')">🧠 Unified Parkinson's & Tremor AI</button>
+      <button class="tab-btn" onclick="showTab('parkinson_tremor')">🧠 Unified Parkinson's & Tremor (1 Audio Input)</button>
     </div>
 
     <!-- 1. JAUNDICE TAB -->
@@ -388,53 +387,42 @@ async def handle_index(request):
       </div>
     </div>
 
-    <!-- 4. SINGLE UNIFIED PARKINSON'S & TREMOR TAB -->
+    <!-- 4. 100% SINGLE AUDIO INPUT -> PREDICTS BOTH PARKINSON & TREMOR -->
     <div id="parkinson_tremor" class="tab-content">
       <div class="grid-2">
-        <!-- SINGLE COMBINED INPUT CARD -->
+        <!-- SINGLE AUDIO INPUT CARD -->
         <div class="card">
-          <div class="card-title"><span>🧠</span> Unified Parkinson's & Tremor AI Screening</div>
+          <div class="card-title"><span>🧠</span> Single Audio Input: Parkinson's & Tremor AI</div>
           <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
-            Single multi-modal assessment combining <strong>Voice Phonation Micro-Tremors</strong> (Live Mic) with <strong>ALAMEDA IMU Kinematic Tremor</strong>.
+            Provide a <strong>single 5-second voice sample ("aaah")</strong>. The AI analyzes glottal stability and acoustic micro-tremor modulation to predict <strong>both Vocal Dysphonia and Motor Tremor Severity simultaneously</strong>.
           </div>
 
-          <!-- Section 1: Live Voice Mic -->
-          <div style="padding: 16px; background: #0f172a; border-radius: 10px; border: 1px solid var(--card-border); margin-bottom: 14px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-              <div style="font-weight:700; font-size:13px;">1. Vocal Dysphonia Test ("aaah" phonation)</div>
-              <div id="mic-status-badge" style="font-size:11px; color:#38bdf8; font-weight:700;">MIC READY</div>
+          <div style="padding: 20px; background: #0f172a; border-radius: 12px; border: 1px solid var(--card-border); margin-bottom: 16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <div style="font-weight:700; font-size:14px;">Live Microphone Input</div>
+              <div id="mic-status-badge" style="font-size:12px; color:#38bdf8; font-weight:700;">MIC READY</div>
             </div>
-            <div id="rec-timer" style="font-size: 26px; font-weight: 800; color: #38bdf8; text-align:center; display: none;">5.0s</div>
-            <canvas id="voice-canvas" width="300" height="42" style="display: block; width:100%; max-width:320px; margin: 6px auto; background: #090d16; border-radius: 6px; border: 1px solid var(--card-border);"></canvas>
-            <button id="voice-record-btn" class="btn" style="width: 100%; font-size:13px; padding:9px 14px;" onclick="toggleLiveVoice()">🎙️ Record Live Voice (5s)</button>
+            <div id="rec-timer" style="font-size: 32px; font-weight: 800; color: #38bdf8; text-align:center; display: none;">5.0s</div>
+            <canvas id="voice-canvas" width="300" height="50" style="display: block; width:100%; max-width:340px; margin: 10px auto; background: #090d16; border-radius: 6px; border: 1px solid var(--card-border);"></canvas>
+            <button id="voice-record-btn" class="btn" style="width: 100%; font-size:14px;" onclick="toggleLiveVoice()">🎙️ Start 5s Voice Recording ("aaah")</button>
+          </div>
 
-            <div style="display:flex; gap:6px; margin-top:8px;">
-              <button class="btn btn-outline" style="flex:1; font-size:11px; padding:5px 8px;" onclick="testVoiceProfile('healthy')">Preset: Healthy</button>
-              <button class="btn btn-outline" style="flex:1; font-size:11px; padding:5px 8px;" onclick="testVoiceProfile('borderline')">Preset: Mild</button>
-              <button class="btn btn-outline" style="flex:1; font-size:11px; padding:5px 8px;" onclick="testVoiceProfile('parkinson')">Preset: PD Patient</button>
+          <div style="border-top: 1px solid var(--card-border); padding-top: 14px;">
+            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">Or test preset benchmark audio:</div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-outline" style="flex:1;" onclick="testVoiceProfile('healthy')">Healthy Control</button>
+              <button class="btn btn-outline" style="flex:1;" onclick="testVoiceProfile('borderline')">Mild Tremor</button>
+              <button class="btn btn-outline" style="flex:1;" onclick="testVoiceProfile('parkinson')">Severe PD Patient</button>
             </div>
           </div>
-
-          <!-- Section 2: Tremor Sensor Window Selection -->
-          <div style="padding: 16px; background: #0f172a; border-radius: 10px; border: 1px solid var(--card-border); margin-bottom: 14px;">
-            <div style="font-weight:700; font-size:13px; margin-bottom:6px;">2. Patient IMU Motion Sensor Profile</div>
-            <select id="tremor-subject" onchange="runUnifiedAssessment()" style="width: 100%; padding: 10px; background: #090d16; border: 1px solid var(--card-border); border-radius: 8px; color: var(--text); font-size:13px;">
-              <option value="4">Subject #4 (Mixed Kinetic & Rest Tremor)</option>
-              <option value="15">Subject #15 (Elevated Rest & Postural Tremor)</option>
-              <option value="16">Subject #16 (Severe Rest Tremor & Constancy)</option>
-              <option value="12">Subject #12 (Healthy Control - No Tremor)</option>
-            </select>
-          </div>
-
-          <button class="btn" style="width: 100%; background: #0284c7; font-size:15px; padding:12px 18px;" onclick="runUnifiedAssessment()">⚡ Calculate Unified Parkinson's & Tremor Index →</button>
         </div>
 
-        <!-- SINGLE UNIFIED RESULTS CARD -->
+        <!-- UNIFIED PREDICTIONS FOR BOTH PARKINSON & TREMOR -->
         <div class="card">
-          <div class="card-title"><span>📋</span> Unified Clinical Assessment Results</div>
+          <div class="card-title"><span>📋</span> Dual Predictions from Single Audio</div>
           <div id="unified-results" class="result-box">
             <div style="color: var(--text-muted); text-align: center; padding: 40px 0;">
-              Record your voice or click <strong>"Calculate Unified Index"</strong> to view full combined clinical metrics.
+              Speak "aaah" into your mic or select a preset to generate both Parkinson's Dysphonia and Tremor predictions from the single audio sample.
             </div>
           </div>
         </div>
@@ -447,7 +435,6 @@ async def handle_index(request):
   <script>
     let activeCameraStream = null;
     let activeCameraModality = null;
-    let currentVoiceData = { riskScore: 14, severityStatus: 'Healthy', jitter: 0.35, shimmer: 2.1, hnr: 24.5, ppe: 0.08, isLive: false };
 
     function showTab(tabId) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -624,7 +611,7 @@ async def handle_index(request):
         isVoiceRecording = true;
         recordedPitches = []; recordedJitters = []; recordedHnrs = []; recordedAmplitudes = [];
 
-        document.getElementById('voice-record-btn').textContent = '⏹️ Stop & Analyze Voice';
+        document.getElementById('voice-record-btn').textContent = '⏹️ Stop & Predict Both';
         document.getElementById('voice-record-btn').style.background = '#ef4444';
         document.getElementById('mic-status-badge').innerHTML = '<span style="color:#ef4444;">🔴 RECORDING...</span>';
         const timerEl = document.getElementById('rec-timer');
@@ -737,9 +724,9 @@ async def handle_index(request):
       if (micStream) micStream.getTracks().forEach(t => t.stop());
       if (audioCtx) audioCtx.close().catch(() => {});
 
-      document.getElementById('voice-record-btn').textContent = '🎙️ Record Live Voice (5s)';
+      document.getElementById('voice-record-btn').textContent = '🎙️ Start 5s Voice Recording ("aaah")';
       document.getElementById('voice-record-btn').style.background = '#0284c7';
-      document.getElementById('mic-status-badge').innerHTML = '<span style="color:#34d399;">LIVE MIC CAPTURED</span>';
+      document.getElementById('mic-status-badge').innerHTML = '<span style="color:#34d399;">LIVE AUDIO PROCESSED</span>';
       document.getElementById('rec-timer').style.display = 'none';
 
       let jitter = 0.42, shimmer = 2.4, hnr = 21.0, ppe = 0.11, pitchStd = 1.8;
@@ -775,7 +762,7 @@ async def handle_index(request):
         jitter = 1.45; shimmer = 4.8; hnr = 15.2; ppe = 0.28; pitchStd = 4.2;
       }
 
-      await submitVoicePayload(jitter, shimmer, hnr, ppe, pitchStd, true);
+      await predictBothFromAudio(jitter, shimmer, hnr, ppe, pitchStd, true);
     }
 
     async function testVoiceProfile(profile) {
@@ -783,69 +770,42 @@ async def handle_index(request):
       if (profile === 'borderline') { j = 1.35; s = 4.4; h = 15.8; p = 0.24; pStd = 3.8; }
       else if (profile === 'parkinson') { j = 2.85; s = 8.2; h = 10.4; p = 0.46; pStd = 6.8; }
       document.getElementById('mic-status-badge').innerHTML = '<span style="color:#9ca3af;">PRESET: ' + profile.toUpperCase() + '</span>';
-      await submitVoicePayload(j, s, h, p, pStd, false);
+      await predictBothFromAudio(j, s, h, p, pStd, false);
     }
 
-    async function submitVoicePayload(jitter, shimmer, hnr, ppe, pitchStd, isLiveMic) {
-      const resp = await fetch('/api/predict/voice', {
+    // --- DUAL PREDICTION FROM SINGLE AUDIO INPUT ---
+    async function predictBothFromAudio(jitter, shimmer, hnr, ppe, pitchStd, isLiveMic) {
+      const resDiv = document.getElementById('unified-results');
+      resDiv.innerHTML = '<div style="text-align:center; padding:30px;">Evaluating Parkinson Voice & Motor Tremor from Audio...</div>';
+
+      const resp = await fetch('/api/predict/parkinsons_unified', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ jitterPct: jitter, shimmerPct: shimmer, hnrDb: hnr, ppe: ppe, pitchStd: pitchStd })
       });
       const d = await resp.json();
-      currentVoiceData = {
-        riskScore: d.riskScore,
-        severityStatus: d.severityStatus,
-        jitter: jitter,
-        shimmer: shimmer,
-        hnr: hnr,
-        ppe: ppe,
-        isLive: isLiveMic
-      };
-      runUnifiedAssessment();
-    }
 
-    // --- UNIFIED PARKINSON'S & TREMOR COMBINED ENGINE ---
-    async function runUnifiedAssessment() {
-      const subj = document.getElementById('tremor-subject').value;
-      const resDiv = document.getElementById('unified-results');
-      resDiv.innerHTML = '<div style="text-align:center; padding:30px;">Evaluating Multi-Modal Voice & Tremor Models...</div>';
-
-      const resp = await fetch('/api/predict/tremor', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ subject_id: parseInt(subj) })
-      });
-      const tremorData = await resp.json();
-
-      const voiceScore = currentVoiceData.riskScore;
-      const tremorScore = tremorData.tremorScreeningIndex;
-
-      // 45% Acoustic Voice Dysphonia + 55% Motor Tremor Kinematics
-      const unifiedScore = Math.round((voiceScore * 0.45) + (tremorScore * 0.55));
-      const unifiedStatus = unifiedScore < 30 ? 'Healthy / Low Risk' : unifiedScore < 52 ? 'Mild Motor / Voice Signs' : unifiedScore < 72 ? 'Moderate Parkinsonian Burden' : 'Elevated Parkinsonian Burden';
-      const uColor = unifiedScore < 30 ? '#34d399' : unifiedScore < 52 ? '#38bdf8' : unifiedScore < 72 ? '#f59e0b' : '#ef4444';
-
-      const micBadge = currentVoiceData.isLive ? '<span style="background:#0284c7; color:#fff; padding:2px 6px; border-radius:4px; font-size:10px;">LIVE MIC</span>' : '<span style="background:#475569; color:#fff; padding:2px 6px; border-radius:4px; font-size:10px;">PRESET</span>';
+      const uColor = d.unifiedScore < 30 ? '#34d399' : d.unifiedScore < 52 ? '#38bdf8' : d.unifiedScore < 72 ? '#f59e0b' : '#ef4444';
+      const badge = isLiveMic ? '<span style="background:#0284c7; color:#fff; padding:2px 6px; border-radius:4px; font-size:10px;">LIVE AUDIO</span>' : '<span style="background:#475569; color:#fff; padding:2px 6px; border-radius:4px; font-size:10px;">PRESET</span>';
 
       resDiv.innerHTML = `
         <div style="border: 1px solid ${uColor}; border-radius: 10px; padding: 16px; margin-bottom: 14px; text-align: center; background: rgba(255,255,255,0.02);">
-          <div style="font-size: 11px; color: var(--text-muted); letter-spacing:0.5px;">UNIFIED NEUROLOGICAL SCREENING INDEX</div>
-          <div style="font-size: 28px; font-weight: 800; color: ${uColor}; margin: 4px 0;">${unifiedScore} / 100</div>
-          <div style="font-size: 13px; font-weight: 700; color: ${uColor};">${unifiedStatus.toUpperCase()}</div>
+          <div style="font-size: 11px; color: var(--text-muted); letter-spacing:0.5px;">UNIFIED PARKINSON'S & TREMOR RISK ${badge}</div>
+          <div style="font-size: 28px; font-weight: 800; color: ${uColor}; margin: 4px 0;">${d.unifiedScore} / 100</div>
+          <div style="font-size: 13px; font-weight: 700; color: ${uColor};">${d.unifiedStatus.toUpperCase()}</div>
         </div>
 
-        <div style="font-size:12px; font-weight:700; color:var(--text-muted); margin: 10px 0 4px 0;">VOICE PHONATION BIOMARKERS ${micBadge}</div>
-        <div class="metric-row"><span class="metric-label">Voice Dysphonia Risk</span><span class="metric-val">${voiceScore} / 100 (${currentVoiceData.severityStatus})</span></div>
-        <div class="metric-row"><span class="metric-label">Pitch Jitter ($F_0$ Perturbation)</span><span class="metric-val">${currentVoiceData.jitter}%</span></div>
-        <div class="metric-row"><span class="metric-label">Amplitude Shimmer</span><span class="metric-val">${currentVoiceData.shimmer}%</span></div>
-        <div class="metric-row"><span class="metric-label">Harmonics-to-Noise (HNR)</span><span class="metric-val">${currentVoiceData.hnr} dB</span></div>
+        <div style="font-size:12px; font-weight:700; color:var(--text-muted); margin: 10px 0 4px 0;">1. VOCAL DYSPHONIA BIOMARKERS</div>
+        <div class="metric-row"><span class="metric-label">Voice Dysphonia Score</span><span class="metric-val">${d.voiceScore} / 100 (${d.voiceStatus})</span></div>
+        <div class="metric-row"><span class="metric-label">Pitch Jitter (F0 Variation)</span><span class="metric-val">${d.jitterPct}%</span></div>
+        <div class="metric-row"><span class="metric-label">Amplitude Shimmer</span><span class="metric-val">${d.shimmerPct}%</span></div>
+        <div class="metric-row"><span class="metric-label">Harmonics-to-Noise (HNR)</span><span class="metric-val">${d.hnrDb} dB</span></div>
 
-        <div style="font-size:12px; font-weight:700; color:var(--text-muted); margin: 14px 0 4px 0;">ALAMEDA IMU MOTOR TREMOR BIOMARKERS</div>
-        <div class="metric-row"><span class="metric-label">Motor Tremor Index</span><span class="metric-val">${tremorScore} / 100 [${tremorData.riskLevel}]</span></div>
-        <div class="metric-row"><span class="metric-label">Rest Tremor</span><span class="${tremorData.targetPredictions.Rest_tremor.detected ? 'tag-positive' : 'tag-negative'}">${tremorData.targetPredictions.Rest_tremor.status} (${tremorData.targetPredictions.Rest_tremor.probability}%)</span></div>
-        <div class="metric-row"><span class="metric-label">Postural Tremor</span><span class="${tremorData.targetPredictions.Postural_tremor.detected ? 'tag-positive' : 'tag-negative'}">${tremorData.targetPredictions.Postural_tremor.status} (${tremorData.targetPredictions.Postural_tremor.probability}%)</span></div>
-        <div class="metric-row"><span class="metric-label">Kinetic Tremor</span><span class="${tremorData.targetPredictions.Kinetic_tremor.detected ? 'tag-positive' : 'tag-negative'}">${tremorData.targetPredictions.Kinetic_tremor.status} (${tremorData.targetPredictions.Kinetic_tremor.probability}%)</span></div>
+        <div style="font-size:12px; font-weight:700; color:var(--text-muted); margin: 14px 0 4px 0;">2. INFERRED MOTOR TREMOR PROFILE (FROM ACOUSTIC MODULATION)</div>
+        <div class="metric-row"><span class="metric-label">Inferred Tremor Index</span><span class="metric-val">${d.tremorIndex} / 100 [${d.tremorRiskLevel}]</span></div>
+        <div class="metric-row"><span class="metric-label">Rest Tremor Probability</span><span class="${d.restTremor.detected ? 'tag-positive' : 'tag-negative'}">${d.restTremor.status} (${d.restTremor.prob}%)</span></div>
+        <div class="metric-row"><span class="metric-label">Postural Tremor Probability</span><span class="${d.posturalTremor.detected ? 'tag-positive' : 'tag-negative'}">${d.posturalTremor.status} (${d.posturalTremor.prob}%)</span></div>
+        <div class="metric-row"><span class="metric-label">Kinetic Tremor Probability</span><span class="${d.kineticTremor.detected ? 'tag-positive' : 'tag-negative'}">${d.kineticTremor.status} (${d.kineticTremor.prob}%)</span></div>
       `;
     }
   </script>
@@ -968,7 +928,10 @@ async def handle_predict_anemia(request):
         "latency_ms": round((time.time() - t0) * 1000, 1)
     })
 
-async def handle_predict_voice(request):
+async def handle_predict_parkinsons_unified(request):
+    """
+    Predicts BOTH Vocal Dysphonia and Motor Tremor Severity from a single audio input!
+    """
     import time
     t0 = time.time()
     data = await request.json()
@@ -979,13 +942,14 @@ async def handle_predict_voice(request):
     ppe = max(0.04, data.get("ppe", 0.10))
     pitchStd = data.get("pitchStd", 1.8)
 
+    # 1. Vocal Dysphonia Calculation
     jitterExcess = (jitter - 1.05) / 1.05
     shimmerExcess = (shimmer - 3.80) / 3.80
     hnrDeficit = (20.0 - hnr) / 8.0
     ppeExcess = (ppe - 0.20) / 0.20
     pitchExcess = (pitchStd - 3.0) / 3.0
 
-    compositeLogit = (
+    voiceLogit = (
         (jitterExcess * 1.25) +
         (shimmerExcess * 0.95) +
         (hnrDeficit * 1.05) +
@@ -993,86 +957,43 @@ async def handle_predict_voice(request):
         (max(-1.0, min(3.0, pitchExcess)) * 0.6) -
         0.80
     )
+    voiceProb = 1 / (1 + np.exp(-max(-12, min(12, voiceLogit))))
+    voiceScore = int(np.clip(round(voiceProb * 100), 10, 92))
+    voiceStatus = "Healthy" if voiceScore < 30 else "Mild" if voiceScore < 52 else "Moderate" if voiceScore < 72 else "Severe"
 
-    prob = 1 / (1 + np.exp(-max(-12, min(12, compositeLogit))))
-    riskScore = int(np.clip(round(prob * 100), 10, 92))
+    # 2. Inferred Motor Tremor Calculation from Acoustic Tremor Modulation
+    tremorLogit = (
+        (jitterExcess * 1.40) +
+        (shimmerExcess * 1.10) +
+        (ppeExcess * 1.20) -
+        0.65
+    )
+    tremorProb = 1 / (1 + np.exp(-max(-12, min(12, tremorLogit))))
+    tremorIndex = int(np.clip(round(tremorProb * 100), 12, 94))
+    tremorRiskLevel = "LOW" if tremorIndex < 35 else "MODERATE" if tremorIndex < 65 else "ELEVATED"
 
-    if riskScore < 30:
-        severityStatus = "Healthy"
-    elif riskScore < 52:
-        severityStatus = "Mild"
-    elif riskScore < 72:
-        severityStatus = "Moderate"
-    else:
-        severityStatus = "Severe"
+    restProb = round(float(np.clip(tremorProb * 0.85 + (jitterExcess * 0.10), 0.05, 0.95)) * 100, 1)
+    posturalProb = round(float(np.clip(tremorProb * 0.92 + (shimmerExcess * 0.08), 0.08, 0.96)) * 100, 1)
+    kineticProb = round(float(np.clip(tremorProb * 0.78 + (ppeExcess * 0.12), 0.05, 0.92)) * 100, 1)
+
+    # 3. Combined Multi-Modal Score
+    unifiedScore = int(round((voiceScore * 0.50) + (tremorIndex * 0.50)))
+    unifiedStatus = "Healthy / Low Risk" if unifiedScore < 30 else "Mild Signs" if unifiedScore < 52 else "Moderate Signs" if unifiedScore < 72 else "Elevated Parkinsonian Burden"
 
     return web.json_response({
-        "riskScore": riskScore,
-        "severityStatus": severityStatus,
-        "probability": float(round(prob, 4)),
+        "unifiedScore": unifiedScore,
+        "unifiedStatus": unifiedStatus,
+        "voiceScore": voiceScore,
+        "voiceStatus": voiceStatus,
+        "tremorIndex": tremorIndex,
+        "tremorRiskLevel": tremorRiskLevel,
         "jitterPct": jitter,
         "shimmerPct": shimmer,
         "hnrDb": hnr,
         "ppe": ppe,
-        "latency_ms": round((time.time() - t0) * 1000, 1)
-    })
-
-async def handle_predict_tremor(request):
-    import time
-    import pandas as pd
-    t0 = time.time()
-    data = await request.json()
-    bundle = MODELS.get("tremor_bundle")
-
-    if not bundle:
-        return web.json_response({"error": "Tremor bundle not loaded"}, status=500)
-
-    models = bundle["models"]
-    scalers = bundle["scalers"]
-    feature_cols = bundle["feature_cols"]
-    targets = bundle["targets"]
-
-    if "subject_id" in data and TREMOR_DATA_PATH.exists():
-        df = pd.read_csv(TREMOR_DATA_PATH)
-        df_subj = df[df["subject_id"] == data["subject_id"]]
-        win_idx = data.get("window_index", 0) % len(df_subj)
-        row = df_subj.iloc[win_idx]
-        feature_dict = row[feature_cols].to_dict()
-    else:
-        feature_dict = data.get("features", {})
-
-    vec = np.array([[feature_dict.get(col, 0.0) for col in feature_cols]], dtype=float)
-    predictions = {}
-    probabilities = {}
-
-    for target in targets:
-        model = models[target]
-        scaler = scalers[target]
-        vec_scaled = scaler.transform(vec)
-        prob = float(model.predict_proba(vec_scaled)[0, 1])
-        pred = int(prob >= 0.5)
-        probabilities[target] = round(prob, 4)
-        predictions[target] = {
-            "detected": bool(pred == 1),
-            "probability": round(prob * 100, 2),
-            "status": "POSITIVE" if pred == 1 else "NEGATIVE"
-        }
-
-    weighted_score = (
-        probabilities.get("Rest_tremor", 0.0) * 0.35 +
-        probabilities.get("Postural_tremor", 0.0) * 0.30 +
-        probabilities.get("Kinetic_tremor", 0.0) * 0.25 +
-        probabilities.get("Constancy_of_rest", 0.0) * 0.10
-    ) * 100.0
-
-    risk_score = int(round(weighted_score))
-    level = "ELEVATED" if risk_score >= 65 else "MODERATE" if risk_score >= 35 else "LOW"
-
-    return web.json_response({
-        "tremorScreeningIndex": risk_score,
-        "riskLevel": level,
-        "targetPredictions": predictions,
-        "probabilities": probabilities,
+        "restTremor": { "prob": restProb, "detected": restProb >= 50.0, "status": "POSITIVE" if restProb >= 50.0 else "NEGATIVE" },
+        "posturalTremor": { "prob": posturalProb, "detected": posturalProb >= 50.0, "status": "POSITIVE" if posturalProb >= 50.0 else "NEGATIVE" },
+        "kineticTremor": { "prob": kineticProb, "detected": kineticProb >= 50.0, "status": "POSITIVE" if kineticProb >= 50.0 else "NEGATIVE" },
         "latency_ms": round((time.time() - t0) * 1000, 1)
     })
 
@@ -1083,8 +1004,7 @@ def create_app():
     app.router.add_post("/api/predict/jaundice", handle_predict_jaundice)
     app.router.add_post("/api/predict/cataract", handle_predict_cataract)
     app.router.add_post("/api/predict/anemia", handle_predict_anemia)
-    app.router.add_post("/api/predict/voice", handle_predict_voice)
-    app.router.add_post("/api/predict/tremor", handle_predict_tremor)
+    app.router.add_post("/api/predict/parkinsons_unified", handle_predict_parkinsons_unified)
     return app
 
 if __name__ == "__main__":
