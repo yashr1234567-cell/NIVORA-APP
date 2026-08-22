@@ -25,8 +25,10 @@ import joblib
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 
-# Paths
-TFLITE_DIR = Path("models/tflite")
+MODELS_DIR = Path("models")
+CATARACT_MODEL_PATH = Path("models/cataract/cataract_detector_float16.tflite")
+JAUNDICE_MODEL_PATH = Path("models/jaundice/jaundice_model.tflite")
+EYE_MODEL_PATH = Path("models/eye_screening/best_model_fold5.tflite")
 VOICE_BUNDLE_PATH = Path("parkinson_model/parkinson_model.joblib")
 TREMOR_BUNDLE_PATH = Path("parkinson_model/tremor_model_bundle.joblib")
 
