@@ -26,138 +26,135 @@ export default function HomeScreen() {
             <View>
               <ThemedText style={styles.brandTitle}>Nivora</ThemedText>
               <ThemedText type="small" themeColor="textSecondary">
-                AI Digital Biomarkers & Neurological Screening
+                AI Digital Biomarkers & Clinical Screening Suite
               </ThemedText>
             </View>
           </View>
         </View>
 
-        {/* Primary Featured Screening Card */}
-        <ThemedView type="backgroundElement" style={styles.featuredCard}>
+        {/* 1. Jaundice Screening Card */}
+        <ThemedView type="backgroundElement" style={[styles.screeningCard, { borderColor: '#F59E0B' }]}>
           <View style={styles.badgeRow}>
-            <View style={styles.liveTag}>
-              <Text style={styles.liveTagText}>ACTIVE CLINICAL MODULE</Text>
+            <View style={[styles.liveTag, { backgroundColor: '#F59E0B' }]}>
+              <Text style={styles.liveTagText}>JAUNDICE & SCLERA</Text>
             </View>
             <ThemedText type="small" themeColor="textSecondary">
-              10s Voice Test
+              TFLite Model
             </ThemedText>
           </View>
 
-          <ThemedText style={styles.featuredTitle}>Parkinson&apos;s Voice Screening</ThemedText>
+          <ThemedText style={styles.featuredTitle}>Jaundice & Bilirubin Screening</ThemedText>
           <ThemedText style={styles.featuredDesc} themeColor="textSecondary">
-            Early detection of hypokinetic dysarthria and vocal cord micro-tremors using sustained vowel
-            phonation (/a/). Analyzes pitch stability, jitter, shimmer, and harmonics-to-noise ratio (HNR).
+            Non-invasive quantification of scleral icterus and transcutaneous bilirubin from eye/facial photos using `jaundice_model.tflite`.
           </ThemedText>
 
           <View style={styles.metricHighlightsRow}>
             <View style={styles.metricPill}>
-              <Text style={styles.metricPillLabel}>F0 Pitch</Text>
-              <Text style={styles.metricPillVal}>Micro-variations</Text>
+              <Text style={styles.metricPillLabel}>Sclera Colorimetry</Text>
+              <Text style={styles.metricPillVal}>Yellow-to-Blue Ratio</Text>
             </View>
             <View style={styles.metricPill}>
-              <Text style={styles.metricPillLabel}>Jitter %</Text>
-              <Text style={styles.metricPillVal}>Perturbation</Text>
-            </View>
-            <View style={styles.metricPill}>
-              <Text style={styles.metricPillLabel}>HNR</Text>
-              <Text style={styles.metricPillVal}>Acoustic Purity</Text>
+              <Text style={styles.metricPillLabel}>Serum Bilirubin</Text>
+              <Text style={styles.metricPillVal}>mg/dL Estimate</Text>
             </View>
           </View>
 
           <Pressable
-            style={({ pressed }) => [styles.startBtn, pressed && styles.pressed]}
-            onPress={() => router.push('/parkinsons')}
+            style={({ pressed }) => [styles.primaryActionBtn, { backgroundColor: '#D97706' }, pressed && styles.pressed]}
+            onPress={() => router.push('/jaundice')}
           >
-            <Text style={styles.startBtnText}>Launch Voice Screening →</Text>
+            <Text style={styles.primaryActionText}>Start Jaundice Test 🟡 →</Text>
           </Pressable>
         </ThemedView>
 
-        {/* Additional Screening Modules Section */}
-        <View style={styles.sectionHeader}>
-          <ThemedText style={styles.sectionTitle}>Screening Modules</ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            Comprehensive neurological assessment suite
-          </ThemedText>
-        </View>
+        {/* 2. Cataract Screening Card */}
+        <ThemedView type="backgroundElement" style={[styles.screeningCard, { borderColor: '#0284C7' }]}>
+          <View style={styles.badgeRow}>
+            <View style={[styles.liveTag, { backgroundColor: '#0284C7' }]}>
+              <Text style={styles.liveTagText}>CATARACT & OPHTHALMIC</Text>
+            </View>
+            <ThemedText type="small" themeColor="textSecondary">
+              Float16 TFLite
+            </ThemedText>
+          </View>
 
-        <View style={styles.modulesGrid}>
-          {/* Voice Assessment */}
+          <ThemedText style={styles.featuredTitle}>Cataract & Lens Opacity AI</ThemedText>
+          <ThemedText style={styles.featuredDesc} themeColor="textSecondary">
+            Deep learning anterior segment analysis for crystalline lens clouding, nuclear sclerosis, and pupil opacity screening using `cataract_detector_float16.tflite`.
+          </ThemedText>
+
+          <View style={styles.metricHighlightsRow}>
+            <View style={styles.metricPill}>
+              <Text style={styles.metricPillLabel}>Lens Opacity</Text>
+              <Text style={styles.metricPillVal}>Grade 0-4</Text>
+            </View>
+            <View style={styles.metricPill}>
+              <Text style={styles.metricPillLabel}>Model Accuracy</Text>
+              <Text style={styles.metricPillVal}>Float16 Neural Net</Text>
+            </View>
+          </View>
+
           <Pressable
-            style={({ pressed }) => [styles.moduleCard, pressed && styles.pressed]}
+            style={({ pressed }) => [styles.primaryActionBtn, { backgroundColor: '#0284C7' }, pressed && styles.pressed]}
+            onPress={() => router.push('/cataract')}
+          >
+            <Text style={styles.primaryActionText}>Start Cataract Test 👁️ →</Text>
+          </Pressable>
+        </ThemedView>
+
+        {/* 3. Anemia Screening Card */}
+        <ThemedView type="backgroundElement" style={[styles.screeningCard, { borderColor: '#EC4899' }]}>
+          <View style={styles.badgeRow}>
+            <View style={[styles.liveTag, { backgroundColor: '#EC4899' }]}>
+              <Text style={styles.liveTagText}>ANEMIA & PALLOR</Text>
+            </View>
+            <ThemedText type="small" themeColor="textSecondary">
+              Colorimetric AI
+            </ThemedText>
+          </View>
+
+          <ThemedText style={styles.featuredTitle}>Anemia & Hemoglobin Screening</ThemedText>
+          <ThemedText style={styles.featuredDesc} themeColor="textSecondary">
+            Palpebral conjunctival micro-vascularization and erythema index (EI) analysis for non-invasive hemoglobin estimation and pallor screening.
+          </ThemedText>
+
+          <View style={styles.metricHighlightsRow}>
+            <View style={styles.metricPill}>
+              <Text style={styles.metricPillLabel}>Conjunctiva</Text>
+              <Text style={styles.metricPillVal}>Erythema Index</Text>
+            </View>
+            <View style={styles.metricPill}>
+              <Text style={styles.metricPillLabel}>Hemoglobin</Text>
+              <Text style={styles.metricPillVal}>g/dL WHO Range</Text>
+            </View>
+          </View>
+
+          <Pressable
+            style={({ pressed }) => [styles.primaryActionBtn, { backgroundColor: '#BE185D' }, pressed && styles.pressed]}
+            onPress={() => router.push('/anemia')}
+          >
+            <Text style={styles.primaryActionText}>Start Anemia Test 🩸 →</Text>
+          </Pressable>
+        </ThemedView>
+
+        {/* 4. Secondary: Voice & Motor Neurological Screening */}
+        <ThemedView type="backgroundElement" style={styles.secondaryCard}>
+          <View style={styles.badgeRow}>
+            <View style={[styles.liveTag, { backgroundColor: '#64748B' }]}>
+              <Text style={styles.liveTagText}>NEUROLOGICAL MODULE</Text>
+            </View>
+          </View>
+          <ThemedText style={styles.secondaryTitle}>Voice Phonation & Tremor Screening</ThemedText>
+          <ThemedText style={styles.secondaryDesc} themeColor="textSecondary">
+            Acoustic micro-tremor and vocal dysphonia analysis for motor/neurological tracking.
+          </ThemedText>
+          <Pressable
+            style={({ pressed }) => [styles.outlineActionBtn, pressed && styles.pressed]}
             onPress={() => router.push('/parkinsons')}
           >
-            <View style={styles.moduleIconBox}>
-              <Text style={styles.moduleIcon}>🎙️</Text>
-            </View>
-            <View style={styles.moduleContent}>
-              <View style={styles.moduleTitleRow}>
-                <ThemedText style={styles.moduleTitle}>Vocal Phonation (PD)</ThemedText>
-                <Text style={styles.readyPill}>Ready</Text>
-              </View>
-              <ThemedText type="small" themeColor="textSecondary">
-                Acoustic analysis using 10-second prolonged vowel test.
-              </ThemedText>
-            </View>
+            <Text style={styles.outlineActionText}>Open Neurological Module 🎙️ →</Text>
           </Pressable>
-
-          {/* Motor Tapping Test */}
-          <View style={[styles.moduleCard, styles.moduleCardMuted]}>
-            <View style={[styles.moduleIconBox, styles.iconBoxMuted]}>
-              <Text style={styles.moduleIcon}>👆</Text>
-            </View>
-            <View style={styles.moduleContent}>
-              <View style={styles.moduleTitleRow}>
-                <ThemedText style={styles.moduleTitle}>Motor Rhythm Tapping</ThemedText>
-                <Text style={styles.comingSoonPill}>Upcoming</Text>
-              </View>
-              <ThemedText type="small" themeColor="textSecondary">
-                Finger-tapping cadence and motor bradykinesia tracking.
-              </ThemedText>
-            </View>
-          </View>
-
-          {/* Postural Tremor */}
-          <View style={[styles.moduleCard, styles.moduleCardMuted]}>
-            <View style={[styles.moduleIconBox, styles.iconBoxMuted]}>
-              <Text style={styles.moduleIcon}>📱</Text>
-            </View>
-            <View style={styles.moduleContent}>
-              <View style={styles.moduleTitleRow}>
-                <ThemedText style={styles.moduleTitle}>Kinematic Tremor Index</ThemedText>
-                <Text style={styles.comingSoonPill}>Upcoming</Text>
-              </View>
-              <ThemedText type="small" themeColor="textSecondary">
-                Accelerometer-based resting and postural tremor assessment.
-              </ThemedText>
-            </View>
-          </View>
-
-          {/* Research & Dataset Explorer */}
-          <Pressable
-            style={({ pressed }) => [styles.moduleCard, styles.moduleCardResearch, pressed && styles.pressed]}
-            onPress={() => router.push('/explore')}
-          >
-            <View style={[styles.moduleIconBox, styles.iconBoxResearch]}>
-              <Text style={styles.moduleIcon}>📊</Text>
-            </View>
-            <View style={styles.moduleContent}>
-              <View style={styles.moduleTitleRow}>
-                <ThemedText style={styles.moduleTitle}>UCI Dataset & Biomarkers</ThemedText>
-                <Text style={styles.researchPill}>Research</Text>
-              </View>
-              <ThemedText type="small" themeColor="textSecondary">
-                756 patient samples, 755 acoustic features, and 0.909 ROC AUC model.
-              </ThemedText>
-            </View>
-          </Pressable>
-        </View>
-
-        {/* Clinical Disclaimer */}
-        <View style={styles.footerNote}>
-          <ThemedText type="small" themeColor="textSecondary" style={styles.footerText}>
-            Medical Screening AI provides digital health screening tools based on research datasets (UCI PD Speech Features). This tool is intended for exploratory analysis and does not replace medical diagnosis.
-          </ThemedText>
-        </View>
+        </ThemedView>
       </ScrollView>
     </SafeAreaView>
   );
@@ -170,51 +167,58 @@ const styles = StyleSheet.create({
   scrollContainer: {
     paddingHorizontal: Spacing.four,
     paddingVertical: Spacing.four,
-    paddingBottom: BottomTabInset + Spacing.four,
+    paddingBottom: BottomTabInset + 40,
     maxWidth: MaxContentWidth,
     alignSelf: 'center',
     width: '100%',
     gap: Spacing.four,
   },
   header: {
-    marginBottom: Spacing.two,
+    paddingBottom: Spacing.two,
   },
   brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: Spacing.three,
   },
   logoBadge: {
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: '#E0F2FE',
+    backgroundColor: '#0284C7',
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#0284C7',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 3,
   },
   logoBadgeText: {
     fontSize: 22,
   },
   brandTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 22,
+    fontWeight: '800',
     letterSpacing: -0.3,
   },
-  featuredCard: {
-    borderRadius: 20,
+  screeningCard: {
+    borderRadius: 16,
     padding: Spacing.four,
-    borderWidth: 1,
-    borderColor: '#BAE6FD',
+    borderWidth: 1.5,
     gap: Spacing.three,
-    backgroundColor: '#F0F9FF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   badgeRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
   },
   liveTag: {
-    backgroundColor: '#0284C7',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
@@ -226,149 +230,74 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   featuredTitle: {
-    fontSize: 22,
+    fontSize: 19,
     fontWeight: '700',
-    color: '#0369A1',
+    letterSpacing: -0.2,
   },
   featuredDesc: {
-    fontSize: 14,
-    lineHeight: 21,
-    color: '#334155',
+    fontSize: 13,
+    lineHeight: 19,
   },
   metricHighlightsRow: {
     flexDirection: 'row',
-    gap: 8,
-    flexWrap: 'wrap',
+    gap: Spacing.two,
   },
   metricPill: {
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    flex: 1,
+    padding: Spacing.two,
     borderRadius: 8,
+    backgroundColor: '#F8FAFC',
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },
   metricPillLabel: {
     fontSize: 11,
-    fontWeight: '700',
-    color: '#0284C7',
+    color: '#64748B',
+    fontWeight: '500',
   },
   metricPillVal: {
     fontSize: 12,
-    color: '#475569',
+    fontWeight: '700',
+    color: '#0F172A',
+    marginTop: 2,
   },
-  startBtn: {
-    backgroundColor: '#0284C7',
-    paddingVertical: 15,
-    borderRadius: 14,
+  primaryActionBtn: {
+    paddingVertical: 13,
+    borderRadius: 10,
     alignItems: 'center',
-    shadowColor: '#0284C7',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 3,
   },
-  startBtnText: {
+  primaryActionText: {
     color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  secondaryCard: {
+    borderRadius: 14,
+    padding: Spacing.four,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    gap: Spacing.two,
+  },
+  secondaryTitle: {
     fontSize: 16,
     fontWeight: '700',
   },
-  sectionHeader: {
-    marginTop: Spacing.two,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 2,
-  },
-  modulesGrid: {
-    gap: 12,
-  },
-  moduleCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: Spacing.three,
-    borderRadius: 14,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    gap: 12,
-  },
-  moduleCardMuted: {
-    opacity: 0.75,
-    backgroundColor: '#F8FAFC',
-  },
-  moduleIconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 10,
-    backgroundColor: '#E0F2FE',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  iconBoxMuted: {
-    backgroundColor: '#F1F5F9',
-  },
-  moduleIcon: {
-    fontSize: 20,
-  },
-  moduleContent: {
-    flex: 1,
-  },
-  moduleTitleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 2,
-  },
-  moduleTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  readyPill: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#059669',
-    backgroundColor: '#D1FAE5',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  comingSoonPill: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#64748B',
-    backgroundColor: '#E2E8F0',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  moduleCardResearch: {
-    borderColor: '#BAE6FD',
-    backgroundColor: '#F0F9FF',
-  },
-  iconBoxResearch: {
-    backgroundColor: '#E0F2FE',
-  },
-  researchPill: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#0284C7',
-    backgroundColor: '#E0F2FE',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  footerNote: {
-    padding: Spacing.three,
-    backgroundColor: '#F8FAFC',
-    borderRadius: 10,
-    marginTop: Spacing.two,
-  },
-  footerText: {
-    fontSize: 12,
+  secondaryDesc: {
+    fontSize: 13,
     lineHeight: 18,
-    textAlign: 'center',
+  },
+  outlineActionBtn: {
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  outlineActionText: {
+    color: '#334155',
+    fontSize: 13,
+    fontWeight: '700',
   },
   pressed: {
     opacity: 0.8,
