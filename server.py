@@ -6,7 +6,7 @@ Modules:
 1. 🟡 Jaundice Screening (Live Camera + `models/jaundice/jaundice_model.tflite`)
 2. 👁️ Cataract Screening (Live Camera + `models/cataract/cataract_detector_float16.tflite`)
 3. 🩸 Anemia Screening (Live Camera + Conjunctival Erythema Colorimetry)
-4. 🧠 Unified Parkinson's & Tremor AI (Real Live Mic Phonation Analyzer + ALAMEDA Tremor Engine)
+4. 🧠 Unified Parkinson's & Tremor AI (Single Unified Multi-Modal Screening Engine)
 """
 
 import os
@@ -263,7 +263,7 @@ async def handle_index(request):
       </div>
     </header>
 
-    <!-- 4 CLEAN TABS -->
+    <!-- 4 UNIFIED TABS -->
     <div class="nav-tabs">
       <button class="tab-btn active" onclick="showTab('jaundice')">🟡 Jaundice (Live Camera)</button>
       <button class="tab-btn" onclick="showTab('cataract')">👁️ Cataract (Live Camera)</button>
@@ -388,57 +388,53 @@ async def handle_index(request):
       </div>
     </div>
 
-    <!-- 4. UNIFIED PARKINSON'S & TREMOR TAB -->
+    <!-- 4. SINGLE UNIFIED PARKINSON'S & TREMOR TAB -->
     <div id="parkinson_tremor" class="tab-content">
       <div class="grid-2">
-        <!-- Live Microphone Voice Phonation -->
+        <!-- SINGLE COMBINED INPUT CARD -->
         <div class="card">
-          <div class="card-title"><span>🎙️</span> Live Microphone Phonation Test</div>
-          <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
-            Sustain a steady <strong>"aaah"</strong> into your microphone for 5 seconds. The AI dynamically extracts Jitter (frequency perturbation), Shimmer (amplitude perturbation), and HNR.
+          <div class="card-title"><span>🧠</span> Unified Parkinson's & Tremor AI Screening</div>
+          <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
+            Single multi-modal assessment combining <strong>Voice Phonation Micro-Tremors</strong> (Live Mic) with <strong>ALAMEDA IMU Kinematic Tremor</strong>.
           </div>
 
-          <div style="text-align: center; padding: 18px; background: #0f172a; border-radius: 12px; border: 1px solid var(--card-border); margin-bottom: 14px;">
-            <div id="mic-status-text" style="font-size: 14px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px;">Microphone Ready</div>
-            <div id="rec-timer" style="font-size: 34px; font-weight: 800; color: #38bdf8; display: none;">5.0s</div>
-            <canvas id="voice-canvas" width="300" height="50" style="display: block; margin: 8px auto; background: #090d16; border-radius: 6px; border: 1px solid var(--card-border);"></canvas>
-            <button id="voice-record-btn" class="btn" style="width: 100%;" onclick="toggleLiveVoice()">🎙️ Start Live Voice Phonation Test</button>
-          </div>
+          <!-- Section 1: Live Voice Mic -->
+          <div style="padding: 16px; background: #0f172a; border-radius: 10px; border: 1px solid var(--card-border); margin-bottom: 14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <div style="font-weight:700; font-size:13px;">1. Vocal Dysphonia Test ("aaah" phonation)</div>
+              <div id="mic-status-badge" style="font-size:11px; color:#38bdf8; font-weight:700;">MIC READY</div>
+            </div>
+            <div id="rec-timer" style="font-size: 26px; font-weight: 800; color: #38bdf8; text-align:center; display: none;">5.0s</div>
+            <canvas id="voice-canvas" width="300" height="42" style="display: block; width:100%; max-width:320px; margin: 6px auto; background: #090d16; border-radius: 6px; border: 1px solid var(--card-border);"></canvas>
+            <button id="voice-record-btn" class="btn" style="width: 100%; font-size:13px; padding:9px 14px;" onclick="toggleLiveVoice()">🎙️ Record Live Voice (5s)</button>
 
-          <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">Or test preset benchmarks:</div>
-          <div style="display:flex; gap:6px;">
-            <button class="btn btn-outline" style="flex:1;" onclick="testVoiceProfile('healthy')">Healthy (Stable Voice)</button>
-            <button class="btn btn-outline" style="flex:1;" onclick="testVoiceProfile('borderline')">Mild Micro-Tremor</button>
-            <button class="btn btn-outline" style="flex:1;" onclick="testVoiceProfile('parkinson')">Severe Tremor (PD)</button>
-          </div>
-
-          <div id="voice-results" class="result-box" style="margin-top: 14px;">
-            <div style="color: var(--text-muted); text-align: center; padding: 20px 0; font-size: 13px;">
-              Click <strong>"Start Live Voice Phonation Test"</strong> and speak "aaah" into your mic.
+            <div style="display:flex; gap:6px; margin-top:8px;">
+              <button class="btn btn-outline" style="flex:1; font-size:11px; padding:5px 8px;" onclick="testVoiceProfile('healthy')">Preset: Healthy</button>
+              <button class="btn btn-outline" style="flex:1; font-size:11px; padding:5px 8px;" onclick="testVoiceProfile('borderline')">Preset: Mild</button>
+              <button class="btn btn-outline" style="flex:1; font-size:11px; padding:5px 8px;" onclick="testVoiceProfile('parkinson')">Preset: PD Patient</button>
             </div>
           </div>
-        </div>
 
-        <!-- Unified Tremor & Multi-Modal Assessment -->
-        <div class="card">
-          <div class="card-title"><span>⚡</span> ALAMEDA Motion Tremor & Unified Index</div>
-          <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
-            Combines acoustic voice perturbations with ALAMEDA multi-target IMU sensor window classifiers.
+          <!-- Section 2: Tremor Sensor Window Selection -->
+          <div style="padding: 16px; background: #0f172a; border-radius: 10px; border: 1px solid var(--card-border); margin-bottom: 14px;">
+            <div style="font-weight:700; font-size:13px; margin-bottom:6px;">2. Patient IMU Motion Sensor Profile</div>
+            <select id="tremor-subject" onchange="runUnifiedAssessment()" style="width: 100%; padding: 10px; background: #090d16; border: 1px solid var(--card-border); border-radius: 8px; color: var(--text); font-size:13px;">
+              <option value="4">Subject #4 (Mixed Kinetic & Rest Tremor)</option>
+              <option value="15">Subject #15 (Elevated Rest & Postural Tremor)</option>
+              <option value="16">Subject #16 (Severe Rest Tremor & Constancy)</option>
+              <option value="12">Subject #12 (Healthy Control - No Tremor)</option>
+            </select>
           </div>
 
-          <label class="metric-label">Patient Motion Subject</label>
-          <select id="tremor-subject" onchange="runUnifiedAssessment()" style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid var(--card-border); border-radius: 8px; color: var(--text); margin-bottom: 14px;">
-            <option value="4">Subject #4 (Mixed Kinetic & Rest Tremor)</option>
-            <option value="15">Subject #15 (Elevated Rest & Postural Tremor)</option>
-            <option value="16">Subject #16 (Severe Rest Tremor & Constancy)</option>
-            <option value="12">Subject #12 (Healthy Control - No Tremor)</option>
-          </select>
+          <button class="btn" style="width: 100%; background: #0284c7; font-size:15px; padding:12px 18px;" onclick="runUnifiedAssessment()">⚡ Calculate Unified Parkinson's & Tremor Index →</button>
+        </div>
 
-          <button class="btn" style="width: 100%;" onclick="runUnifiedAssessment()">Calculate Unified Parkinson's & Tremor Index →</button>
-
-          <div id="unified-results" class="result-box" style="margin-top: 14px;">
-            <div style="color: var(--text-muted); text-align: center; padding: 20px 0; font-size: 13px;">
-              Click <strong>"Calculate Unified Index"</strong> to combine Voice + Motor Tremor.
+        <!-- SINGLE UNIFIED RESULTS CARD -->
+        <div class="card">
+          <div class="card-title"><span>📋</span> Unified Clinical Assessment Results</div>
+          <div id="unified-results" class="result-box">
+            <div style="color: var(--text-muted); text-align: center; padding: 40px 0;">
+              Record your voice or click <strong>"Calculate Unified Index"</strong> to view full combined clinical metrics.
             </div>
           </div>
         </div>
@@ -451,8 +447,7 @@ async def handle_index(request):
   <script>
     let activeCameraStream = null;
     let activeCameraModality = null;
-    let lastVoiceScore = null;
-    let lastTremorScore = null;
+    let currentVoiceData = { riskScore: 14, severityStatus: 'Healthy', jitter: 0.35, shimmer: 2.1, hnr: 24.5, ppe: 0.08, isLive: false };
 
     function showTab(tabId) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -629,9 +624,9 @@ async def handle_index(request):
         isVoiceRecording = true;
         recordedPitches = []; recordedJitters = []; recordedHnrs = []; recordedAmplitudes = [];
 
-        document.getElementById('voice-record-btn').textContent = '⏹️ Stop & Calculate Voice';
+        document.getElementById('voice-record-btn').textContent = '⏹️ Stop & Analyze Voice';
         document.getElementById('voice-record-btn').style.background = '#ef4444';
-        document.getElementById('mic-status-text').innerHTML = '<span style="color:#ef4444;">🔴 RECORDING: Sustain steady "aaah" now...</span>';
+        document.getElementById('mic-status-badge').innerHTML = '<span style="color:#ef4444;">🔴 RECORDING...</span>';
         const timerEl = document.getElementById('rec-timer');
         timerEl.style.display = 'block';
 
@@ -659,7 +654,6 @@ async def handle_index(request):
         if (!isVoiceRecording) return;
         analyserNode.getFloatTimeDomainData(buffer);
 
-        // Draw waveform
         ctx.fillStyle = '#090d16';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.lineWidth = 2; ctx.strokeStyle = '#38bdf8';
@@ -667,14 +661,13 @@ async def handle_index(request):
         const sliceWidth = canvas.width / buffer.length;
         let x = 0;
         for (let i = 0; i < buffer.length; i++) {
-          const v = buffer[i] * 40;
+          const v = buffer[i] * 35;
           const y = canvas.height / 2 + v;
           if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
           x += sliceWidth;
         }
         ctx.stroke();
 
-        // Real-Time Acoustic Perturbation Extraction
         let rms = 0;
         for (let i = 0; i < buffer.length; i++) rms += buffer[i] * buffer[i];
         rms = Math.sqrt(rms / buffer.length);
@@ -684,7 +677,6 @@ async def handle_index(request):
           const sr = audioCtx.sampleRate;
           const minLag = Math.floor(sr / 380), maxLag = Math.floor(sr / 75);
 
-          // Moving average filter for glottal pulse separation
           const k = Math.max(4, Math.floor(sr / 900));
           const lp = new Float32Array(buffer.length);
           let sum = 0;
@@ -713,7 +705,6 @@ async def handle_index(request):
               const clampedC = Math.min(0.99, Math.max(0.08, bestCorr));
               recordedHnrs.push(Math.max(6.0, Math.min(28.0, 10 * Math.log10(clampedC / (1 - clampedC)))));
 
-              // Pulse peak intervals
               const pulses = [];
               const minDist = Math.floor(bestLag * 0.80);
               for (let i = 2; i < lp.length - 2; i++) {
@@ -746,12 +737,11 @@ async def handle_index(request):
       if (micStream) micStream.getTracks().forEach(t => t.stop());
       if (audioCtx) audioCtx.close().catch(() => {});
 
-      document.getElementById('voice-record-btn').textContent = '🎙️ Start Live Voice Phonation Test';
+      document.getElementById('voice-record-btn').textContent = '🎙️ Record Live Voice (5s)';
       document.getElementById('voice-record-btn').style.background = '#0284c7';
-      document.getElementById('mic-status-text').innerHTML = '<span style="color:#34d399;">✅ Live Phonation Captured. Computing AI Model...</span>';
+      document.getElementById('mic-status-badge').innerHTML = '<span style="color:#34d399;">LIVE MIC CAPTURED</span>';
       document.getElementById('rec-timer').style.display = 'none';
 
-      // Dynamic calculation from real live mic buffers
       let jitter = 0.42, shimmer = 2.4, hnr = 21.0, ppe = 0.11, pitchStd = 1.8;
 
       if (recordedPitches.length >= 6) {
@@ -773,7 +763,6 @@ async def handle_index(request):
           hnr = parseFloat(recordedHnrs[Math.floor(recordedHnrs.length / 2)].toFixed(1));
         }
 
-        // Amplitude variation (Shimmer)
         if (recordedAmplitudes.length >= 10) {
           const meanAmp = recordedAmplitudes.reduce((a,b)=>a+b,0)/recordedAmplitudes.length;
           let ampDiff = 0;
@@ -783,7 +772,6 @@ async def handle_index(request):
 
         ppe = parseFloat(Math.min(0.60, Math.max(0.04, jitter * 0.05 + (pitchStd / Math.max(80, meanP)) * 0.9)).toFixed(3));
       } else {
-        // High noise / unsteady capture
         jitter = 1.45; shimmer = 4.8; hnr = 15.2; ppe = 0.28; pitchStd = 4.2;
       }
 
@@ -794,6 +782,7 @@ async def handle_index(request):
       let j = 0.32, s = 2.1, h = 24.5, p = 0.08, pStd = 1.4;
       if (profile === 'borderline') { j = 1.35; s = 4.4; h = 15.8; p = 0.24; pStd = 3.8; }
       else if (profile === 'parkinson') { j = 2.85; s = 8.2; h = 10.4; p = 0.46; pStd = 6.8; }
+      document.getElementById('mic-status-badge').innerHTML = '<span style="color:#9ca3af;">PRESET: ' + profile.toUpperCase() + '</span>';
       await submitVoicePayload(j, s, h, p, pStd, false);
     }
 
@@ -804,57 +793,59 @@ async def handle_index(request):
         body: JSON.stringify({ jitterPct: jitter, shimmerPct: shimmer, hnrDb: hnr, ppe: ppe, pitchStd: pitchStd })
       });
       const d = await resp.json();
-      lastVoiceScore = d.riskScore;
-
-      const color = d.severityStatus === 'Healthy' ? '#34d399' : d.severityStatus === 'Mild' ? '#38bdf8' : d.severityStatus === 'Moderate' ? '#f59e0b' : '#ef4444';
-      const badge = isLiveMic ? '<span style="background:#0284c7; color:#fff; padding:2px 6px; border-radius:4px; font-size:10px; margin-left:6px;">LIVE MIC</span>' : '<span style="background:#64748b; color:#fff; padding:2px 6px; border-radius:4px; font-size:10px; margin-left:6px;">PRESET</span>';
-
-      document.getElementById('voice-results').innerHTML = `
-        <div style="border: 1px solid ${color}; border-radius: 10px; padding: 14px; margin-bottom: 12px; text-align: center; background: rgba(255,255,255,0.02);">
-          <div style="font-size: 11px; color: var(--text-muted);">ACOUSTIC DYSPHONIA CLASSIFICATION ${badge}</div>
-          <div style="font-size: 24px; font-weight: 800; color: ${color}; margin: 4px 0;">${d.severityStatus.toUpperCase()}</div>
-        </div>
-        <div class="metric-row"><span class="metric-label">Vocal Risk Score</span><span class="metric-val" style="color:${color};">${d.riskScore} / 100</span></div>
-        <div class="metric-row"><span class="metric-label">Pitch Jitter (F0 Variation)</span><span class="metric-val">${jitter}%</span></div>
-        <div class="metric-row"><span class="metric-label">Amplitude Shimmer</span><span class="metric-val">${shimmer}%</span></div>
-        <div class="metric-row"><span class="metric-label">Harmonics-to-Noise (HNR)</span><span class="metric-val">${hnr} dB</span></div>
-        <div class="metric-row"><span class="metric-label">Pitch Period Entropy (PPE)</span><span class="metric-val">${ppe}</span></div>
-      `;
-
-      // Auto-update unified index
+      currentVoiceData = {
+        riskScore: d.riskScore,
+        severityStatus: d.severityStatus,
+        jitter: jitter,
+        shimmer: shimmer,
+        hnr: hnr,
+        ppe: ppe,
+        isLive: isLiveMic
+      };
       runUnifiedAssessment();
     }
 
-    // --- UNIFIED PARKINSON'S & TREMOR COMBINED ASSESSMENT ---
+    // --- UNIFIED PARKINSON'S & TREMOR COMBINED ENGINE ---
     async function runUnifiedAssessment() {
       const subj = document.getElementById('tremor-subject').value;
+      const resDiv = document.getElementById('unified-results');
+      resDiv.innerHTML = '<div style="text-align:center; padding:30px;">Evaluating Multi-Modal Voice & Tremor Models...</div>';
+
       const resp = await fetch('/api/predict/tremor', {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({ subject_id: parseInt(subj) })
       });
       const tremorData = await resp.json();
-      lastTremorScore = tremorData.tremorScreeningIndex;
 
-      const voiceScore = lastVoiceScore !== null ? lastVoiceScore : 25;
+      const voiceScore = currentVoiceData.riskScore;
       const tremorScore = tremorData.tremorScreeningIndex;
 
-      // 50% Voice Acoustic Dysphonia + 50% Motor Kinematic Tremor = Unified Index
+      // 45% Acoustic Voice Dysphonia + 55% Motor Tremor Kinematics
       const unifiedScore = Math.round((voiceScore * 0.45) + (tremorScore * 0.55));
       const unifiedStatus = unifiedScore < 30 ? 'Healthy / Low Risk' : unifiedScore < 52 ? 'Mild Motor / Voice Signs' : unifiedScore < 72 ? 'Moderate Parkinsonian Burden' : 'Elevated Parkinsonian Burden';
       const uColor = unifiedScore < 30 ? '#34d399' : unifiedScore < 52 ? '#38bdf8' : unifiedScore < 72 ? '#f59e0b' : '#ef4444';
 
-      document.getElementById('unified-results').innerHTML = `
-        <div style="border: 1px solid ${uColor}; border-radius: 10px; padding: 14px; margin-bottom: 12px; text-align: center; background: rgba(255,255,255,0.03);">
-          <div style="font-size: 11px; color: var(--text-muted);">COMBINED CLINICAL INDEX (VOICE + TREMOR)</div>
-          <div style="font-size: 26px; font-weight: 800; color: ${uColor}; margin: 4px 0;">${unifiedScore} / 100</div>
-          <div style="font-size: 12px; font-weight: 700; color: ${uColor};">${unifiedStatus.toUpperCase()}</div>
+      const micBadge = currentVoiceData.isLive ? '<span style="background:#0284c7; color:#fff; padding:2px 6px; border-radius:4px; font-size:10px;">LIVE MIC</span>' : '<span style="background:#475569; color:#fff; padding:2px 6px; border-radius:4px; font-size:10px;">PRESET</span>';
+
+      resDiv.innerHTML = `
+        <div style="border: 1px solid ${uColor}; border-radius: 10px; padding: 16px; margin-bottom: 14px; text-align: center; background: rgba(255,255,255,0.02);">
+          <div style="font-size: 11px; color: var(--text-muted); letter-spacing:0.5px;">UNIFIED NEUROLOGICAL SCREENING INDEX</div>
+          <div style="font-size: 28px; font-weight: 800; color: ${uColor}; margin: 4px 0;">${unifiedScore} / 100</div>
+          <div style="font-size: 13px; font-weight: 700; color: ${uColor};">${unifiedStatus.toUpperCase()}</div>
         </div>
-        <div class="metric-row"><span class="metric-label">Voice Dysphonia Score</span><span class="metric-val">${voiceScore} / 100</span></div>
+
+        <div style="font-size:12px; font-weight:700; color:var(--text-muted); margin: 10px 0 4px 0;">VOICE PHONATION BIOMARKERS ${micBadge}</div>
+        <div class="metric-row"><span class="metric-label">Voice Dysphonia Risk</span><span class="metric-val">${voiceScore} / 100 (${currentVoiceData.severityStatus})</span></div>
+        <div class="metric-row"><span class="metric-label">Pitch Jitter ($F_0$ Perturbation)</span><span class="metric-val">${currentVoiceData.jitter}%</span></div>
+        <div class="metric-row"><span class="metric-label">Amplitude Shimmer</span><span class="metric-val">${currentVoiceData.shimmer}%</span></div>
+        <div class="metric-row"><span class="metric-label">Harmonics-to-Noise (HNR)</span><span class="metric-val">${currentVoiceData.hnr} dB</span></div>
+
+        <div style="font-size:12px; font-weight:700; color:var(--text-muted); margin: 14px 0 4px 0;">ALAMEDA IMU MOTOR TREMOR BIOMARKERS</div>
         <div class="metric-row"><span class="metric-label">Motor Tremor Index</span><span class="metric-val">${tremorScore} / 100 [${tremorData.riskLevel}]</span></div>
-        <div class="metric-row"><span class="metric-label">Rest Tremor Detection</span><span class="${tremorData.targetPredictions.Rest_tremor.detected ? 'tag-positive' : 'tag-negative'}">${tremorData.targetPredictions.Rest_tremor.status} (${tremorData.targetPredictions.Rest_tremor.probability}%)</span></div>
-        <div class="metric-row"><span class="metric-label">Postural Tremor Detection</span><span class="${tremorData.targetPredictions.Postural_tremor.detected ? 'tag-positive' : 'tag-negative'}">${tremorData.targetPredictions.Postural_tremor.status} (${tremorData.targetPredictions.Postural_tremor.probability}%)</span></div>
-        <div class="metric-row"><span class="metric-label">Kinetic Tremor Detection</span><span class="${tremorData.targetPredictions.Kinetic_tremor.detected ? 'tag-positive' : 'tag-negative'}">${tremorData.targetPredictions.Kinetic_tremor.status} (${tremorData.targetPredictions.Kinetic_tremor.probability}%)</span></div>
+        <div class="metric-row"><span class="metric-label">Rest Tremor</span><span class="${tremorData.targetPredictions.Rest_tremor.detected ? 'tag-positive' : 'tag-negative'}">${tremorData.targetPredictions.Rest_tremor.status} (${tremorData.targetPredictions.Rest_tremor.probability}%)</span></div>
+        <div class="metric-row"><span class="metric-label">Postural Tremor</span><span class="${tremorData.targetPredictions.Postural_tremor.detected ? 'tag-positive' : 'tag-negative'}">${tremorData.targetPredictions.Postural_tremor.status} (${tremorData.targetPredictions.Postural_tremor.probability}%)</span></div>
+        <div class="metric-row"><span class="metric-label">Kinetic Tremor</span><span class="${tremorData.targetPredictions.Kinetic_tremor.detected ? 'tag-positive' : 'tag-negative'}">${tremorData.targetPredictions.Kinetic_tremor.status} (${tremorData.targetPredictions.Kinetic_tremor.probability}%)</span></div>
       `;
     }
   </script>
@@ -988,7 +979,6 @@ async def handle_predict_voice(request):
     ppe = max(0.04, data.get("ppe", 0.10))
     pitchStd = data.get("pitchStd", 1.8)
 
-    # Dynamic logit calculation based on real microphone perturbation measurements
     jitterExcess = (jitter - 1.05) / 1.05
     shimmerExcess = (shimmer - 3.80) / 3.80
     hnrDeficit = (20.0 - hnr) / 8.0
