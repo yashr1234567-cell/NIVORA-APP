@@ -61,7 +61,7 @@ export default function HomeScreen() {
 
           <Pressable
             style={({ pressed }) => [styles.primaryActionBtn, { backgroundColor: '#D97706' }, pressed && styles.pressed]}
-            onPress={() => router.push('/jaundice')}
+            onPress={() => router.push('/jaundice' as any)}
           >
             <Text style={styles.primaryActionText}>Start Jaundice Test 🟡 →</Text>
           </Pressable>
@@ -96,7 +96,7 @@ export default function HomeScreen() {
 
           <Pressable
             style={({ pressed }) => [styles.primaryActionBtn, { backgroundColor: '#0284C7' }, pressed && styles.pressed]}
-            onPress={() => router.push('/cataract')}
+            onPress={() => router.push('/cataract' as any)}
           >
             <Text style={styles.primaryActionText}>Start Cataract Test 👁️ →</Text>
           </Pressable>
@@ -131,7 +131,7 @@ export default function HomeScreen() {
 
           <Pressable
             style={({ pressed }) => [styles.primaryActionBtn, { backgroundColor: '#BE185D' }, pressed && styles.pressed]}
-            onPress={() => router.push('/anemia')}
+            onPress={() => router.push('/anemia' as any)}
           >
             <Text style={styles.primaryActionText}>Start Anemia Test 🩸 →</Text>
           </Pressable>
