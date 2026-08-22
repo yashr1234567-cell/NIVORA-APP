@@ -1,0 +1,203 @@
+{
+  "dataset": "ALAMEDA Parkinson's Disease Tremor Dataset",
+  "totalSamples": 4151,
+  "totalFeatures": 92,
+  "totalSubjects": 11,
+  "validationMethod": "Stratified 5-Fold Cross-Validation",
+  "targets": {
+    "Rest_tremor": {
+      "positiveSamples": 1575,
+      "negativeSamples": 2576,
+      "prevalencePct": 37.94,
+      "metrics": {
+        "rocAuc": 0.752,
+        "cvRocAucMean": 0.752,
+        "cvRocAucStd": 0.0109,
+        "accuracy": 0.702,
+        "cvAccuracyMean": 0.702,
+        "cvAccuracyStd": 0.0066,
+        "sensitivity": 0.4133,
+        "specificity": 0.8785,
+        "precision": 0.6753,
+        "f1Score": 0.5128
+      },
+      "confusionMatrix": {
+        "trueNegative": 2263,
+        "falsePositive": 313,
+        "falseNegative": 924,
+        "truePositive": 651
+      },
+      "topBiomarkers": {
+        "Magnitude_dfa": 0.02512,
+        "PC1_sampen": 0.02426,
+        "PC1_med_dev": 0.0203,
+        "PC1_iqr": 0.01899,
+        "Magnitude_ssc_rt": 0.01837,
+        "Magnitude_sampen": 0.01793,
+        "PC1_skewness": 0.01778,
+        "PC1_fft_dom_freq": 0.0177
+      }
+    },
+    "Postural_tremor": {
+      "positiveSamples": 875,
+      "negativeSamples": 3276,
+      "prevalencePct": 21.08,
+      "metrics": {
+        "rocAuc": 0.8622,
+        "cvRocAucMean": 0.8622,
+        "cvRocAucStd": 0.0143,
+        "accuracy": 0.8477,
+        "cvAccuracyMean": 0.8477,
+        "cvAccuracyStd": 0.0136,
+        "sensitivity": 0.4469,
+        "specificity": 0.9548,
+        "precision": 0.7254,
+        "f1Score": 0.553
+      },
+      "confusionMatrix": {
+        "trueNegative": 3128,
+        "falsePositive": 148,
+        "falseNegative": 484,
+        "truePositive": 391
+      },
+      "topBiomarkers": {
+        "PC1_skewness": 0.03713,
+        "Magnitude_median": 0.02506,
+        "PC1_median": 0.0241,
+        "PC1_med_dev": 0.02226,
+        "PC1_ssc_rt": 0.02207,
+        "PC1_sampen": 0.02099,
+        "PC1_iqr": 0.02096,
+        "PC1_fft_entropy": 0.02012
+      }
+    },
+    "Kinetic_tremor": {
+      "positiveSamples": 175,
+      "negativeSamples": 3976,
+      "prevalencePct": 4.22,
+      "metrics": {
+        "rocAuc": 0.8996,
+        "cvRocAucMean": 0.8998,
+        "cvRocAucStd": 0.0281,
+        "accuracy": 0.9528,
+        "cvAccuracyMean": 0.9528,
+        "cvAccuracyStd": 0.0075,
+        "sensitivity": 0.3486,
+        "specificity": 0.9794,
+        "precision": 0.4266,
+        "f1Score": 0.3836
+      },
+      "confusionMatrix": {
+        "trueNegative": 3894,
+        "falsePositive": 82,
+        "falseNegative": 114,
+        "truePositive": 61
+      },
+      "topBiomarkers": {
+        "Magnitude_median": 0.05231,
+        "PC1_med_dev": 0.0502,
+        "PC1_iqr": 0.04521,
+        "Magnitude_min": 0.03249,
+        "PC1_skewness": 0.03117,
+        "Magnitude_med_dev": 0.02616,
+        "Magnitude_iqr": 0.02285,
+        "PC1_sampen": 0.01918
+      }
+    },
+    "Constancy_of_rest": {
+      "positiveSamples": 3150,
+      "negativeSamples": 1001,
+      "prevalencePct": 75.89,
+      "metrics": {
+        "rocAuc": 0.7657,
+        "cvRocAucMean": 0.7663,
+        "cvRocAucStd": 0.025,
+        "accuracy": 0.7897,
+        "cvAccuracyMean": 0.7897,
+        "cvAccuracyStd": 0.0041,
+        "sensitivity": 0.9883,
+        "specificity": 0.1648,
+        "precision": 0.7883,
+        "f1Score": 0.877
+      },
+      "confusionMatrix": {
+        "trueNegative": 165,
+        "falsePositive": 836,
+        "falseNegative": 37,
+        "truePositive": 3113
+      },
+      "topBiomarkers": {
+        "Magnitude_ssc_rt": 0.02835,
+        "Magnitude_peaks_rt": 0.02744,
+        "PC1_fft_dom_freq": 0.02077,
+        "PC1_zero_cross_rt": 0.02002,
+        "PC1_fft_entropy": 0.01935,
+        "Magnitude_min": 0.01906,
+        "Magnitude_dfa": 0.01836,
+        "PC1_med_dev": 0.01735
+      }
+    }
+  },
+  "topGlobalBiomarkers": [
+    {
+      "feature": "PC1_med_dev",
+      "importance": 0.02753
+    },
+    {
+      "feature": "Magnitude_median",
+      "importance": 0.02681
+    },
+    {
+      "feature": "PC1_iqr",
+      "importance": 0.02541
+    },
+    {
+      "feature": "PC1_skewness",
+      "importance": 0.02523
+    },
+    {
+      "feature": "Magnitude_ssc_rt",
+      "importance": 0.02098
+    },
+    {
+      "feature": "Magnitude_min",
+      "importance": 0.02066
+    },
+    {
+      "feature": "PC1_sampen",
+      "importance": 0.01919
+    },
+    {
+      "feature": "Magnitude_peaks_rt",
+      "importance": 0.01877
+    },
+    {
+      "feature": "PC1_zero_cross_rt",
+      "importance": 0.01696
+    },
+    {
+      "feature": "PC1_fft_dom_freq",
+      "importance": 0.01666
+    },
+    {
+      "feature": "PC1_median",
+      "importance": 0.01641
+    },
+    {
+      "feature": "PC1_fft_entropy",
+      "importance": 0.01607
+    },
+    {
+      "feature": "Magnitude_dfa",
+      "importance": 0.01598
+    },
+    {
+      "feature": "Magnitude_med_dev",
+      "importance": 0.01597
+    },
+    {
+      "feature": "Magnitude_sampen",
+      "importance": 0.0156
+    }
+  ]
+}
