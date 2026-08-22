@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 """
 server.py
-Unified Nivora Medical AI Verification Server with Full Live Camera & Microphone Capabilities.
+Nivora Medical AI Screening Suite.
+Modules:
+1. 🟡 Jaundice Screening (Live Camera + `models/jaundice/jaundice_model.tflite`)
+2. 👁️ Cataract Screening (Live Camera + `models/cataract/cataract_detector_float16.tflite`)
+3. 🩸 Anemia Screening (Live Camera + Conjunctival Erythema Colorimetry)
+4. 🧠 Parkinson's & Tremor AI (Live Mic Voice Phonation + ALAMEDA Multi-Target Tremor)
 """
 
 import os
@@ -24,22 +29,18 @@ logger = logging.getLogger(__name__)
 MODELS_DIR = Path("models")
 CATARACT_MODEL_PATH = Path("models/cataract/cataract_detector_float16.tflite")
 JAUNDICE_MODEL_PATH = Path("models/jaundice/jaundice_model.tflite")
-EYE_MODEL_PATH = Path("models/eye_screening/best_model_fold5.tflite")
 VOICE_BUNDLE_PATH = Path("models/parkinsons/voice/parkinson_model.joblib")
 TREMOR_BUNDLE_PATH = Path("models/parkinsons/tremor/tremor_model_bundle.joblib")
-SPIRAL_MODEL_DIR = Path("models/parkinsons/drawings/spiral/best_model")
-WAVE_MODEL_DIR = Path("models/parkinsons/drawings/wave/best_model")
 TREMOR_DATA_PATH = Path("data/ALAMEDA_PD_tremor_dataset.csv")
-DRAWING_DATA_DIR = Path("parkinsons_data")
 
 MODELS: Dict[str, Any] = {}
 
 def load_models():
-    logger.info("Loading all Nivora models into memory...")
+    logger.info("Loading Nivora Medical AI Models...")
     if VOICE_BUNDLE_PATH.exists():
         try:
             MODELS["voice_bundle"] = joblib.load(VOICE_BUNDLE_PATH)
-            logger.info("✅ Voice Model loaded.")
+            logger.info("✅ Voice Phonation Model loaded.")
         except Exception as e:
             logger.warning(f"Voice load notice: {e}")
 
@@ -50,29 +51,13 @@ def load_models():
         except Exception as e:
             logger.warning(f"Tremor load notice: {e}")
 
-    try:
-        from transformers import AutoImageProcessor, AutoModelForImageClassification
-        if SPIRAL_MODEL_DIR.exists():
-            MODELS["spiral_processor"] = AutoImageProcessor.from_pretrained(str(SPIRAL_MODEL_DIR), use_fast=False)
-            MODELS["spiral_model"] = AutoModelForImageClassification.from_pretrained(str(SPIRAL_MODEL_DIR))
-            MODELS["spiral_model"].eval()
-            logger.info("✅ Spiral Swin Model loaded.")
-
-        if WAVE_MODEL_DIR.exists():
-            MODELS["wave_processor"] = AutoImageProcessor.from_pretrained(str(WAVE_MODEL_DIR), use_fast=False)
-            MODELS["wave_model"] = AutoModelForImageClassification.from_pretrained(str(WAVE_MODEL_DIR))
-            MODELS["wave_model"].eval()
-            logger.info("✅ Wave Swin Model loaded.")
-    except Exception as e:
-        logger.warning(f"Vision model load notice: {e}")
-
 async def handle_index(request):
     html_content = """<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nivora - Live Camera & Mic Medical AI</title>
+  <title>Nivora - Medical AI Screening Suite</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -90,19 +75,19 @@ async def handle_index(request):
       background: var(--bg);
       color: var(--text);
       line-height: 1.5;
-      padding: 20px;
+      padding: 24px;
     }
     .container { max-width: 1200px; margin: 0 auto; }
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-bottom: 18px;
+      padding-bottom: 20px;
       border-bottom: 1px solid var(--card-border);
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
     .brand { display: flex; align-items: center; gap: 12px; }
-    .brand-icon { font-size: 32px; }
+    .brand-icon { font-size: 34px; }
     .brand-title { font-size: 22px; font-weight: 800; }
     .status-badge {
       display: flex;
@@ -125,19 +110,19 @@ async def handle_index(request):
     }
     .nav-tabs {
       display: flex;
-      gap: 8px;
-      margin-bottom: 20px;
+      gap: 10px;
+      margin-bottom: 24px;
       flex-wrap: wrap;
     }
     .tab-btn {
-      padding: 10px 16px;
+      padding: 11px 20px;
       border-radius: 8px;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       color: var(--text-muted);
       cursor: pointer;
       font-weight: 700;
-      font-size: 13px;
+      font-size: 14px;
       transition: all 0.2s;
     }
     .tab-btn:hover { background: #1e293b; color: var(--text); }
@@ -149,13 +134,13 @@ async def handle_index(request):
     }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
     @media(max-width: 840px) { .grid-2 { grid-template-columns: 1fr; } }
     .card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 12px;
-      padding: 22px;
+      padding: 24px;
     }
     .card-title {
       font-size: 16px;
@@ -268,23 +253,22 @@ async def handle_index(request):
       <div class="brand">
         <span class="brand-icon">🩺</span>
         <div>
-          <div class="brand-title">Nivora Live Medical AI Suite</div>
-          <div style="font-size: 13px; color: var(--text-muted);">Real-Time Camera & Microphone Clinical Screening</div>
+          <div class="brand-title">Nivora Medical AI Screening Suite</div>
+          <div style="font-size: 13px; color: var(--text-muted);">Jaundice • Cataract • Anemia • Unified Parkinson's & Tremor</div>
         </div>
       </div>
       <div class="status-badge">
         <div class="pulse-dot"></div>
-        Live Hardware Ready
+        Live Systems Ready
       </div>
     </header>
 
+    <!-- 4 FOCUSED TABS -->
     <div class="nav-tabs">
       <button class="tab-btn active" onclick="showTab('jaundice')">🟡 Jaundice (Live Camera)</button>
       <button class="tab-btn" onclick="showTab('cataract')">👁️ Cataract (Live Camera)</button>
       <button class="tab-btn" onclick="showTab('anemia')">🩸 Anemia (Live Camera)</button>
-      <button class="tab-btn" onclick="showTab('voice')">🎙️ Voice (Live Mic)</button>
-      <button class="tab-btn" onclick="showTab('tremor')">⚡ Tremor Motion</button>
-      <button class="tab-btn" onclick="showTab('drawings')">🌀 Drawings Vision</button>
+      <button class="tab-btn" onclick="showTab('parkinson_tremor')">🧠 Parkinson's & Tremor (Live Mic + IMU)</button>
     </div>
 
     <!-- 1. JAUNDICE TAB -->
@@ -404,20 +388,21 @@ async def handle_index(request):
       </div>
     </div>
 
-    <!-- 4. VOICE TAB (LIVE MIC) -->
-    <div id="voice" class="tab-content">
+    <!-- 4. UNIFIED PARKINSON'S & TREMOR TAB -->
+    <div id="parkinson_tremor" class="tab-content">
       <div class="grid-2">
+        <!-- Voice Phonation -->
         <div class="card">
-          <div class="card-title"><span>🎤</span> 1-Click Live Microphone Phonation Test</div>
-          <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
-            Click start and sustain a steady <strong>"aaah"</strong> into your microphone for 5 seconds.
+          <div class="card-title"><span>🎙️</span> Module A: Voice Phonation Micro-Tremor</div>
+          <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            Sustain a steady <strong>"aaah"</strong> into your microphone for 5 seconds to detect vocal fold micro-tremors and acoustic dysphonia.
           </div>
 
-          <div style="text-align: center; padding: 20px; background: #0f172a; border-radius: 12px; border: 1px solid var(--card-border); margin-bottom: 14px;">
-            <div id="mic-status-text" style="font-size: 14px; font-weight: 700; color: var(--text-muted); margin-bottom: 10px;">Microphone Ready</div>
-            <div id="rec-timer" style="font-size: 36px; font-weight: 800; color: #38bdf8; display: none;">5.0s</div>
-            <canvas id="voice-canvas" width="300" height="60" style="display: block; margin: 10px auto; background: #090d16; border-radius: 6px; border: 1px solid var(--card-border);"></canvas>
-            <button id="voice-record-btn" class="btn" style="width: 100%; font-size: 15px;" onclick="toggleLiveVoice()">🎙️ Start Live Voice Phonation Test</button>
+          <div style="text-align: center; padding: 18px; background: #0f172a; border-radius: 12px; border: 1px solid var(--card-border); margin-bottom: 14px;">
+            <div id="mic-status-text" style="font-size: 14px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px;">Microphone Ready</div>
+            <div id="rec-timer" style="font-size: 34px; font-weight: 800; color: #38bdf8; display: none;">5.0s</div>
+            <canvas id="voice-canvas" width="300" height="50" style="display: block; margin: 8px auto; background: #090d16; border-radius: 6px; border: 1px solid var(--card-border);"></canvas>
+            <button id="voice-record-btn" class="btn" style="width: 100%;" onclick="toggleLiveVoice()">🎙️ Start Live Voice Phonation Test</button>
           </div>
 
           <div style="display:flex; gap:6px;">
@@ -425,66 +410,34 @@ async def handle_index(request):
             <button class="btn btn-outline" style="flex:1;" onclick="testVoiceProfile('borderline')">Mild Tremor</button>
             <button class="btn btn-outline" style="flex:1;" onclick="testVoiceProfile('parkinson')">PD Patient</button>
           </div>
-        </div>
 
-        <div class="card">
-          <div class="card-title"><span>📋</span> Voice AI Screening Judgment</div>
-          <div id="voice-results" class="result-box">
-            <div style="color: var(--text-muted); text-align: center; padding: 40px 0;">
+          <div id="voice-results" class="result-box" style="margin-top: 14px;">
+            <div style="color: var(--text-muted); text-align: center; padding: 20px 0; font-size: 13px;">
               Sustain "aaah" into your mic to see live vocal stability judgment.
             </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- 5. TREMOR TAB -->
-    <div id="tremor" class="tab-content">
-      <div class="grid-2">
+        <!-- ALAMEDA Tremor Motion -->
         <div class="card">
-          <div class="card-title"><span>⚡</span> ALAMEDA Multi-Target Tremor Classifier</div>
+          <div class="card-title"><span>⚡</span> Module B: ALAMEDA IMU Tremor Classifier</div>
+          <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            Evaluates Rest, Postural, Kinetic, and Constancy tremor profiles from patient sensor windows.
+          </div>
+
           <label class="metric-label">Select Patient Subject</label>
-          <select id="tremor-subject" style="margin-bottom: 14px;">
+          <select id="tremor-subject" style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid var(--card-border); border-radius: 8px; color: var(--text); margin-bottom: 14px;">
             <option value="4">Subject #4 (Mixed Kinetic & Rest Tremor)</option>
-            <option value="15">Subject #15 (Elevated Rest Tremor)</option>
+            <option value="15">Subject #15 (Elevated Rest & Postural Tremor)</option>
             <option value="16">Subject #16 (Severe Rest Tremor & Constancy)</option>
             <option value="12">Subject #12 (Healthy Control - No Tremor)</option>
           </select>
-          <button class="btn" style="width: 100%;" onclick="runTremorPrediction()">Run Tremor Multi-Target Evaluation →</button>
-        </div>
-        <div class="card">
-          <div class="card-title"><span>🎯</span> Clinical Tremor Predictions</div>
-          <div id="tremor-results" class="result-box">
-            <div style="color: var(--text-muted); text-align: center; padding: 40px 0;">
-              Select a subject and run evaluation.
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- 6. DRAWINGS TAB -->
-    <div id="drawings" class="tab-content">
-      <div class="grid-2">
-        <div class="card">
-          <div class="card-title"><span>🌀</span> Swin Vision Transformer (Spiral/Wave)</div>
-          <label class="metric-label">Modality</label>
-          <select id="drawing-modality" onchange="loadDrawingSamples()" style="margin-bottom: 14px;">
-            <option value="spiral">🌀 Spiral Drawing</option>
-            <option value="wave">🌊 Wave Drawing</option>
-          </select>
-          <label class="metric-label">Select Test Sketch Sample</label>
-          <select id="drawing-sample" onchange="previewSelectedDrawing()" style="margin-bottom: 14px;"></select>
-          <div style="text-align: center;">
-            <img id="drawing-preview" class="preview-img" src="" alt="Drawing Preview" style="height:160px; margin-bottom:12px;" />
-          </div>
-          <button class="btn" style="width: 100%;" onclick="runDrawingPrediction()">Run Vision Transformer Inference →</button>
-        </div>
-        <div class="card">
-          <div class="card-title"><span>📊</span> Vision Classification Results</div>
-          <div id="drawing-results" class="result-box">
-            <div style="color: var(--text-muted); text-align: center; padding: 40px 0;">
-              Select a sketch sample and click Run Inference.
+          <button class="btn" style="width: 100%;" onclick="runTremorPrediction()">Run Tremor Multi-Target Evaluation →</button>
+
+          <div id="tremor-results" class="result-box" style="margin-top: 14px;">
+            <div style="color: var(--text-muted); text-align: center; padding: 20px 0; font-size: 13px;">
+              Select a patient subject to evaluate multi-target tremor burden.
             </div>
           </div>
         </div>
@@ -503,7 +456,6 @@ async def handle_index(request):
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       event.target.classList.add('active');
       document.getElementById(tabId).classList.add('active');
-      if (tabId === 'drawings') loadDrawingSamples();
     }
 
     // --- CAMERA ENGINE ---
@@ -572,14 +524,12 @@ async def handle_index(request):
 
       const base64Img = canvas.toDataURL('image/jpeg', 0.85);
 
-      // Show preview
       const preview = document.getElementById(`${modality}-preview`);
       preview.src = base64Img;
       preview.style.display = 'block';
       video.style.display = 'none';
       stopActiveCamera();
 
-      // Run prediction
       const resDiv = document.getElementById(`${modality}-results`);
       resDiv.innerHTML = '<div style="text-align:center; padding:30px;">Evaluating live snapshot with AI model...</div>';
 
@@ -750,10 +700,10 @@ async def handle_index(request):
       const color = d.severityStatus === 'Healthy' ? '#34d399' : d.severityStatus === 'Mild' ? '#38bdf8' : d.severityStatus === 'Moderate' ? '#f59e0b' : '#ef4444';
 
       document.getElementById('voice-results').innerHTML = `
-        <div style="font-size: 24px; font-weight: 800; color: ${color}; margin-bottom: 8px;">${d.severityStatus.toUpperCase()}</div>
+        <div style="font-size: 22px; font-weight: 800; color: ${color}; margin-bottom: 8px;">${d.severityStatus.toUpperCase()}</div>
         <div class="metric-row"><span class="metric-label">Screening Risk Score</span><span class="metric-val" style="color:${color};">${d.riskScore} / 100</span></div>
-        <div class="metric-row"><span class="metric-label">Model Probability</span><span class="metric-val">${(d.probability * 100).toFixed(1)}%</span></div>
-        <div class="metric-row"><span class="metric-label">Trained Model</span><span class="metric-val">models/parkinsons/voice/parkinson_model.joblib</span></div>
+        <div class="metric-row"><span class="metric-label">Probability</span><span class="metric-val">${(d.probability * 100).toFixed(1)}%</span></div>
+        <div class="metric-row"><span class="metric-label">Model</span><span class="metric-val">models/parkinsons/voice/parkinson_model.joblib</span></div>
       `;
     }
 
@@ -769,41 +719,7 @@ async def handle_index(request):
         <div class="metric-row"><span class="metric-label">Rest Tremor</span><span class="${d.targetPredictions.Rest_tremor.detected ? 'tag-positive' : 'tag-negative'}">${d.targetPredictions.Rest_tremor.status}</span></div>
         <div class="metric-row"><span class="metric-label">Postural Tremor</span><span class="${d.targetPredictions.Postural_tremor.detected ? 'tag-positive' : 'tag-negative'}">${d.targetPredictions.Postural_tremor.status}</span></div>
         <div class="metric-row"><span class="metric-label">Kinetic Tremor</span><span class="${d.targetPredictions.Kinetic_tremor.detected ? 'tag-positive' : 'tag-negative'}">${d.targetPredictions.Kinetic_tremor.status}</span></div>
-      `;
-    }
-
-    // DRAWINGS
-    async function loadDrawingSamples() {
-      const mod = document.getElementById('drawing-modality').value;
-      const res = await fetch(`/api/samples?modality=${mod}`);
-      const data = await res.json();
-      const sel = document.getElementById('drawing-sample');
-      sel.innerHTML = '';
-      data.samples.forEach(s => {
-        const opt = document.createElement('option');
-        opt.value = s.path;
-        opt.textContent = `${s.label.toUpperCase()} - ${s.filename}`;
-        sel.appendChild(opt);
-      });
-      previewSelectedDrawing();
-    }
-    function previewSelectedDrawing() {
-      const p = document.getElementById('drawing-sample').value;
-      if (p) {
-        const img = document.getElementById('drawing-preview');
-        img.src = `/api/image?path=${encodeURIComponent(p)}`;
-        img.style.display = 'block';
-      }
-    }
-    async function runDrawingPrediction() {
-      const mod = document.getElementById('drawing-modality').value;
-      const path = document.getElementById('drawing-sample').value;
-      const resp = await fetch('/api/predict/drawing', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ modality: mod, image_path: path }) });
-      const d = await resp.json();
-      const isPD = d.predicted_label === 'parkinson';
-      document.getElementById('drawing-results').innerHTML = `
-        <div style="font-size:22px; font-weight:800; color:${isPD ? '#f87171' : '#34d399'}; margin-bottom:8px;">${isPD ? '⚠️ Parkinsonian Drawing' : '✅ Healthy Drawing'}</div>
-        <div class="metric-row"><span class="metric-label">Confidence</span><span class="metric-val">${(d.confidence*100).toFixed(1)}%</span></div>
+        <div class="metric-row"><span class="metric-label">Constancy of Rest</span><span class="${d.targetPredictions.Constancy_of_rest.detected ? 'tag-positive' : 'tag-negative'}">${d.targetPredictions.Constancy_of_rest.status}</span></div>
       `;
     }
   </script>
@@ -1009,84 +925,19 @@ async def handle_predict_tremor(request):
         "latency_ms": round((time.time() - t0) * 1000, 1)
     })
 
-async def handle_predict_drawing(request):
-    import time
-    import torch
-    import torch.nn.functional as F
-    t0 = time.time()
-    data = await request.json()
-
-    modality = data.get("modality", "spiral")
-    processor = MODELS.get(f"{modality}_processor")
-    model = MODELS.get(f"{modality}_model")
-
-    if processor is None or model is None:
-        return web.json_response({"error": f"{modality} model not loaded"}, status=500)
-
-    if data.get("image_base64"):
-        raw_b64 = data["image_base64"].split(",")[-1]
-        img_bytes = base64.b64decode(raw_b64)
-        image = Image.open(io.BytesIO(img_bytes)).convert("RGB")
-    elif data.get("image_path"):
-        image = Image.open(data["image_path"]).convert("RGB")
-    else:
-        return web.json_response({"error": "No image provided"}, status=400)
-
-    inputs = processor(images=image, return_tensors="pt")
-    with torch.no_grad():
-        outputs = model(**inputs)
-        probs = F.softmax(outputs.logits, dim=-1).squeeze(0)
-
-    pred_idx = torch.argmax(probs).item()
-    pred_label = model.config.id2label.get(pred_idx, str(pred_idx))
-
-    return web.json_response({
-        "modality": modality,
-        "predicted_label": pred_label,
-        "confidence": float(probs[pred_idx].item()),
-        "latency_ms": round((time.time() - t0) * 1000, 1)
-    })
-
-async def handle_get_samples(request):
-    modality = request.query.get("modality", "spiral")
-    base_dir = DRAWING_DATA_DIR / modality / "testing"
-    samples = []
-    if base_dir.exists():
-        for label in ["healthy", "parkinson"]:
-            label_dir = base_dir / label
-            if label_dir.exists():
-                for f in sorted(label_dir.glob("*.png"))[:6]:
-                    samples.append({
-                        "filename": f.name,
-                        "label": label,
-                        "path": str(f.resolve())
-                    })
-    return web.json_response({"modality": modality, "samples": samples})
-
-async def handle_get_image(request):
-    img_path = request.query.get("path")
-    if not img_path or not Path(img_path).exists():
-        return web.Response(status=404, text="Image not found")
-    with open(img_path, "rb") as f:
-        content = f.read()
-    return web.Response(body=content, content_type="image/png")
-
 def create_app():
     load_models()
     app = web.Application()
     app.router.add_get("/", handle_index)
-    app.router.add_get("/api/samples", handle_get_samples)
-    app.router.add_get("/api/image", handle_get_image)
     app.router.add_post("/api/predict/jaundice", handle_predict_jaundice)
     app.router.add_post("/api/predict/cataract", handle_predict_cataract)
     app.router.add_post("/api/predict/anemia", handle_predict_anemia)
     app.router.add_post("/api/predict/voice", handle_predict_voice)
     app.router.add_post("/api/predict/tremor", handle_predict_tremor)
-    app.router.add_post("/api/predict/drawing", handle_predict_drawing)
     return app
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5050))
     app = create_app()
-    logger.info(f"🚀 Starting Nivora Live Hardware Server on http://localhost:{port}")
+    logger.info(f"🚀 Starting Nivora Clean Medical AI Server on http://localhost:{port}")
     web.run_app(app, host="0.0.0.0", port=port)
