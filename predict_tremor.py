@@ -15,7 +15,7 @@ import joblib
 import numpy as np
 import pandas as pd
 
-DEFAULT_BUNDLE_PATH = Path("parkinson_model/tremor_model_bundle.joblib")
+DEFAULT_BUNDLE_PATH = Path("models/parkinsons/tremor/tremor_model_bundle.joblib")
 DATA_PATH = Path("data/ALAMEDA_PD_tremor_dataset.csv")
 
 class TremorPredictor:

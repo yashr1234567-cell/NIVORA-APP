@@ -15,8 +15,8 @@ import torch.nn.functional as F
 from PIL import Image
 from transformers import AutoImageProcessor, AutoModelForImageClassification
 
-DEFAULT_SPIRAL_MODEL = Path("parkinsons_finetuned/spiral/best_model")
-DEFAULT_WAVE_MODEL = Path("parkinsons_finetuned/wave/best_model")
+DEFAULT_SPIRAL_MODEL = Path("models/parkinsons/drawings/spiral/best_model")
+DEFAULT_WAVE_MODEL = Path("models/parkinsons/drawings/wave/best_model")
 VALID_EXTS = {".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff"}
 
 class ParkinsonPredictor:

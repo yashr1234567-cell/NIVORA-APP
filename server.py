@@ -29,8 +29,10 @@ MODELS_DIR = Path("models")
 CATARACT_MODEL_PATH = Path("models/cataract/cataract_detector_float16.tflite")
 JAUNDICE_MODEL_PATH = Path("models/jaundice/jaundice_model.tflite")
 EYE_MODEL_PATH = Path("models/eye_screening/best_model_fold5.tflite")
-VOICE_BUNDLE_PATH = Path("parkinson_model/parkinson_model.joblib")
-TREMOR_BUNDLE_PATH = Path("parkinson_model/tremor_model_bundle.joblib")
+VOICE_BUNDLE_PATH = Path("models/parkinsons/voice/parkinson_model.joblib")
+TREMOR_BUNDLE_PATH = Path("models/parkinsons/tremor/tremor_model_bundle.joblib")
+SPIRAL_MODEL_DIR = Path("models/parkinsons/drawings/spiral/best_model")
+WAVE_MODEL_DIR = Path("models/parkinsons/drawings/wave/best_model")
 
 MODELS: Dict[str, Any] = {}
 
