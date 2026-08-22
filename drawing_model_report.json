@@ -1,0 +1,90 @@
+{
+  "project": "Parkinson's Disease Sketch Classification (Spiral & Wave)",
+  "baseModel": "gianlab/swin-tiny-patch4-window7-224-finetuned-parkinson-classification",
+  "architecture": "Swin Transformer (Tiny, Patch 4, Window 7, 224x224)",
+  "dataset": "kmader/parkinsons-drawings",
+  "generatedAt": "2026-08-18 10:25:00",
+  "modalities": {
+    "spiral": {
+      "sampleCounts": {
+        "train": {
+          "healthy": 36,
+          "parkinson": 36,
+          "total": 72
+        },
+        "test": {
+          "healthy": 15,
+          "parkinson": 15,
+          "total": 30
+        },
+        "totalDataset": 102
+      },
+      "heldOutTestMetrics": {
+        "accuracy": 0.8333,
+        "f1Weighted": 0.8316,
+        "precisionWeighted": 0.8472,
+        "recallWeighted": 0.8333,
+        "parkinsonPrecision": 0.9091,
+        "parkinsonRecall": 0.7333,
+        "parkinsonF1": 0.8148,
+        "confusionMatrix": [
+          [14, 1],
+          [4, 11]
+        ]
+      },
+      "fiveFoldCrossValidation": {
+        "meanAccuracy": 0.8424,
+        "stdAccuracy": 0.0505,
+        "meanF1": 0.8378,
+        "stdF1": 0.0561,
+        "foldAccuracies": [0.8571, 0.8571, 0.9000, 0.8500, 0.7500]
+      },
+      "bestModelPath": "parkinsons_finetuned/spiral/best_model",
+      "confusionMatrixPlot": "spiral_confusion_matrix.png"
+    },
+    "wave": {
+      "sampleCounts": {
+        "train": {
+          "healthy": 36,
+          "parkinson": 36,
+          "total": 72
+        },
+        "test": {
+          "healthy": 15,
+          "parkinson": 15,
+          "total": 30
+        },
+        "totalDataset": 102
+      },
+      "heldOutTestMetrics": {
+        "accuracy": 0.9000,
+        "f1Weighted": 0.8999,
+        "precisionWeighted": 0.9018,
+        "recallWeighted": 0.9000,
+        "parkinsonPrecision": 0.9286,
+        "parkinsonRecall": 0.8667,
+        "parkinsonF1": 0.8966,
+        "confusionMatrix": [
+          [14, 1],
+          [2, 13]
+        ]
+      },
+      "fiveFoldCrossValidation": {
+        "meanAccuracy": 0.8324,
+        "stdAccuracy": 0.0693,
+        "meanF1": 0.8306,
+        "stdF1": 0.0701,
+        "foldAccuracies": [0.9048, 0.8571, 0.8500, 0.7000, 0.8500]
+      },
+      "bestModelPath": "parkinsons_finetuned/wave/best_model",
+      "confusionMatrixPlot": "wave_confusion_matrix.png"
+    }
+  },
+  "comparison": {
+    "higherHeldOutTestAccuracy": "wave",
+    "higherHeldOutTestF1": "wave",
+    "higherCrossValidationMeanAccuracy": "spiral",
+    "lowerCrossValidationVariance": "spiral",
+    "clinicalRecommendation": "Multi-modal ensemble screening combining both spiral and wave tests."
+  }
+}
