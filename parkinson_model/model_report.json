@@ -1,0 +1,29 @@
+{
+  "dataset": "UCI Parkinson's Disease Speech Features (pd_speech_features.csv)",
+  "totalSamples": 756,
+  "totalFeatures": 753,
+  "metrics": {
+    "cvRocAucMean": 0.9387,
+    "cvRocAucStd": 0.0109,
+    "cvAccuracyMean": 0.8704,
+    "cvRecallMean": 0.9805,
+    "cvPrecisionMean": 0.8643,
+    "cvF1Mean": 0.9186,
+    "testRocAuc": 0.904,
+    "testAccuracy": 0.8466
+  },
+  "topFeatures": {
+    "std_delta_delta_log_energy": 0.01907,
+    "tqwt_energy_dec_11": 0.01368,
+    "tqwt_entropy_log_dec_12": 0.01313,
+    "tqwt_TKEO_std_dec_11": 0.01126,
+    "std_delta_log_energy": 0.01027,
+    "mean_MFCC_2nd_coef": 0.01013,
+    "tqwt_TKEO_std_dec_13": 0.00981,
+    "tqwt_energy_dec_26": 0.00831,
+    "tqwt_entropy_shannon_dec_13": 0.00799,
+    "tqwt_TKEO_std_dec_12": 0.00792,
+    "tqwt_stdValue_dec_11": 0.00724,
+    "tqwt_entropy_log_dec_11": 0.00706
+  }
+}
