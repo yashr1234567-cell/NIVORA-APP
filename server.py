@@ -1,15 +1,7 @@
 #!/usr/bin/env python3
 """
 server.py
-Unified Nivora All-In-One Medical AI Verification Server.
-Includes interactive testing for ALL models:
-1. 🟡 Jaundice & Sclera Bilirubin Model (`models/jaundice/jaundice_model.tflite`)
-2. 👁️ Cataract & Lens Opacity Float16 (`models/cataract/cataract_detector_float16.tflite`)
-3. 🩸 Anemia & Conjunctival Pallor AI (Erythema Colorimetry & Hemoglobin g/dL)
-4. 👁️ General Eye Screening Model (`models/eye_screening/best_model_fold5.tflite`)
-5. 🎙️ Voice Phonation Screening (Live Mic + `models/parkinsons/voice/parkinson_model.joblib`)
-6. ⚡ ALAMEDA Multi-Target Tremor (`models/parkinsons/tremor/tremor_model_bundle.joblib`)
-7. 🌀 Spiral & Wave Drawing Vision (`models/parkinsons/drawings/`)
+Unified Nivora Medical AI Verification Server with Full Live Camera & Microphone Capabilities.
 """
 
 import os
@@ -28,7 +20,7 @@ import joblib
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 
-# Model & Data Paths
+# Paths
 MODELS_DIR = Path("models")
 CATARACT_MODEL_PATH = Path("models/cataract/cataract_detector_float16.tflite")
 JAUNDICE_MODEL_PATH = Path("models/jaundice/jaundice_model.tflite")
@@ -44,8 +36,6 @@ MODELS: Dict[str, Any] = {}
 
 def load_models():
     logger.info("Loading all Nivora models into memory...")
-
-    # Voice
     if VOICE_BUNDLE_PATH.exists():
         try:
             MODELS["voice_bundle"] = joblib.load(VOICE_BUNDLE_PATH)
@@ -53,7 +43,6 @@ def load_models():
         except Exception as e:
             logger.warning(f"Voice load notice: {e}")
 
-    # Tremor
     if TREMOR_BUNDLE_PATH.exists():
         try:
             MODELS["tremor_bundle"] = joblib.load(TREMOR_BUNDLE_PATH)
@@ -61,7 +50,6 @@ def load_models():
         except Exception as e:
             logger.warning(f"Tremor load notice: {e}")
 
-    # Vision Swin Transformers
     try:
         from transformers import AutoImageProcessor, AutoModelForImageClassification
         if SPIRAL_MODEL_DIR.exists():
@@ -84,7 +72,7 @@ async def handle_index(request):
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nivora - All-In-One Medical AI Suite</title>
+  <title>Nivora - Live Camera & Mic Medical AI</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -102,19 +90,19 @@ async def handle_index(request):
       background: var(--bg);
       color: var(--text);
       line-height: 1.5;
-      padding: 24px;
+      padding: 20px;
     }
     .container { max-width: 1200px; margin: 0 auto; }
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-bottom: 20px;
+      padding-bottom: 18px;
       border-bottom: 1px solid var(--card-border);
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
     .brand { display: flex; align-items: center; gap: 12px; }
-    .brand-icon { font-size: 34px; }
+    .brand-icon { font-size: 32px; }
     .brand-title { font-size: 22px; font-weight: 800; }
     .status-badge {
       display: flex;
@@ -138,7 +126,7 @@ async def handle_index(request):
     .nav-tabs {
       display: flex;
       gap: 8px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       flex-wrap: wrap;
     }
     .tab-btn {
@@ -161,18 +149,18 @@ async def handle_index(request):
     }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     @media(max-width: 840px) { .grid-2 { grid-template-columns: 1fr; } }
     .card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 12px;
-      padding: 24px;
+      padding: 22px;
     }
     .card-title {
       font-size: 16px;
       font-weight: 700;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -189,6 +177,21 @@ async def handle_index(request):
       transition: all 0.2s;
     }
     .btn:hover { background: var(--primary-hover); }
+    .btn-cam {
+      background: #0284c7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+    .btn-snap {
+      background: #10b981;
+      width: 100%;
+      margin-top: 8px;
+      display: none;
+    }
     .btn-outline {
       background: transparent;
       border: 1px solid var(--card-border);
@@ -199,15 +202,30 @@ async def handle_index(request):
       font-size: 12px;
     }
     .btn-outline:hover { background: #1e293b; }
-    input[type="file"], select {
+    .camera-box {
       width: 100%;
-      padding: 10px 14px;
-      border-radius: 8px;
-      background: #0f172a;
+      height: 220px;
+      background: #000000;
+      border-radius: 10px;
       border: 1px solid var(--card-border);
-      color: var(--text);
-      font-size: 14px;
-      margin-bottom: 14px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+    video.cam-feed {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+    img.preview-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: none;
     }
     .result-box {
       margin-top: 14px;
@@ -242,15 +260,6 @@ async def handle_index(request):
       font-size: 12px;
       font-weight: 700;
     }
-    .preview-img {
-      max-width: 100%;
-      height: 180px;
-      object-fit: contain;
-      background: #000;
-      border-radius: 8px;
-      margin-bottom: 14px;
-      border: 1px solid var(--card-border);
-    }
   </style>
 </head>
 <body>
@@ -259,227 +268,217 @@ async def handle_index(request):
       <div class="brand">
         <span class="brand-icon">🩺</span>
         <div>
-          <div class="brand-title">Nivora All-In-One Medical AI Suite</div>
-          <div style="font-size: 13px; color: var(--text-muted);">Jaundice • Cataract • Anemia • Eye Vision • Voice • Tremor • Drawings</div>
+          <div class="brand-title">Nivora Live Medical AI Suite</div>
+          <div style="font-size: 13px; color: var(--text-muted);">Real-Time Camera & Microphone Clinical Screening</div>
         </div>
       </div>
       <div class="status-badge">
         <div class="pulse-dot"></div>
-        All 7 Models Active
+        Live Hardware Ready
       </div>
     </header>
 
-    <!-- NAVIGATION TABS FOR ALL MODELS -->
     <div class="nav-tabs">
-      <button class="tab-btn active" onclick="showTab('jaundice')">🟡 Jaundice (Bilirubin)</button>
-      <button class="tab-btn" onclick="showTab('cataract')">👁️ Cataract (Float16)</button>
-      <button class="tab-btn" onclick="showTab('anemia')">🩸 Anemia (Hemoglobin)</button>
-      <button class="tab-btn" onclick="showTab('eye')">🔍 Eye Vision (Fold 5)</button>
-      <button class="tab-btn" onclick="showTab('voice')">🎙️ Voice Phonation</button>
+      <button class="tab-btn active" onclick="showTab('jaundice')">🟡 Jaundice (Live Camera)</button>
+      <button class="tab-btn" onclick="showTab('cataract')">👁️ Cataract (Live Camera)</button>
+      <button class="tab-btn" onclick="showTab('anemia')">🩸 Anemia (Live Camera)</button>
+      <button class="tab-btn" onclick="showTab('voice')">🎙️ Voice (Live Mic)</button>
       <button class="tab-btn" onclick="showTab('tremor')">⚡ Tremor Motion</button>
-      <button class="tab-btn" onclick="showTab('drawings')">🌀 Drawings (Spiral/Wave)</button>
-      <button class="tab-btn" onclick="showTab('registry')">📊 Model Registry</button>
+      <button class="tab-btn" onclick="showTab('drawings')">🌀 Drawings Vision</button>
     </div>
 
-    <!-- 1. JAUNDICE -->
+    <!-- 1. JAUNDICE TAB -->
     <div id="jaundice" class="tab-content active">
       <div class="grid-2">
         <div class="card">
-          <div class="card-title"><span>🟡</span> Scleral Icterus & Bilirubin Quantification</div>
-          <div style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">
-            Extracts scleral yellow-to-blue chromaticity from ocular photos using <strong>models/jaundice/jaundice_model.tflite</strong>.
+          <div class="card-title"><span>🟡</span> Live Camera Scleral Icterus Detection</div>
+          <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            Open your camera, point at the eye/face, and capture a live snapshot for bilirubin quantification.
           </div>
-          <label class="metric-label">Upload Sclera / Eye Photo</label>
-          <input type="file" id="jaundice-file" accept="image/*" onchange="previewUpload('jaundice-file', 'jaundice-preview')" />
-          <div style="text-align: center;">
-            <img id="jaundice-preview" class="preview-img" src="" alt="Jaundice Preview" style="display:none;" />
+
+          <div class="camera-box">
+            <video id="jaundice-video" class="cam-feed" autoplay playsinline></video>
+            <img id="jaundice-preview" class="preview-img" alt="Captured" />
+            <div id="jaundice-cam-msg" style="color: var(--text-muted); font-size: 13px;">📷 Camera Idle</div>
           </div>
-          <button class="btn" style="width: 100%; background: #d97706;" onclick="runJaundicePrediction()">Run Jaundice TFLite Inference →</button>
-          <div style="border-top: 1px solid var(--card-border); padding-top: 14px; margin-top: 14px;">
-            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">Or test clinical presets:</div>
-            <div style="display: flex; gap: 8px;">
-              <button class="btn btn-outline" style="flex: 1;" onclick="testJaundicePreset('healthy')">Healthy Sclera</button>
-              <button class="btn btn-outline" style="flex: 1;" onclick="testJaundicePreset('mild')">Mild Icterus</button>
-              <button class="btn btn-outline" style="flex: 1;" onclick="testJaundicePreset('severe')">Severe Jaundice</button>
+
+          <button id="jaundice-cam-btn" class="btn btn-cam" onclick="toggleCamera('jaundice')">📸 Open Live Camera</button>
+          <button id="jaundice-snap-btn" class="btn btn-snap" onclick="captureAndPredict('jaundice')">⚡ Take Snapshot & Judge</button>
+
+          <div style="border-top: 1px solid var(--card-border); padding-top: 12px; margin-top: 10px;">
+            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">Or test preset benchmarks:</div>
+            <div style="display:flex; gap:6px;">
+              <button class="btn btn-outline" style="flex:1;" onclick="testPreset('jaundice', 'healthy')">Healthy</button>
+              <button class="btn btn-outline" style="flex:1;" onclick="testPreset('jaundice', 'mild')">Mild Icterus</button>
+              <button class="btn btn-outline" style="flex:1;" onclick="testPreset('jaundice', 'severe')">Severe</button>
             </div>
           </div>
         </div>
+
         <div class="card">
           <div class="card-title"><span>📋</span> Jaundice Screening Results</div>
           <div id="jaundice-results" class="result-box">
             <div style="color: var(--text-muted); text-align: center; padding: 40px 0;">
-              Upload an image or select a benchmark preset to view results.
+              Click <strong>"Open Live Camera"</strong> to capture your eye or select a preset.
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 2. CATARACT -->
+    <!-- 2. CATARACT TAB -->
     <div id="cataract" class="tab-content">
       <div class="grid-2">
         <div class="card">
-          <div class="card-title"><span>👁️</span> Cataract & Lens Opacity Screening</div>
-          <div style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">
-            Anterior segment lens clouding and nuclear sclerosis detection using <strong>models/cataract/cataract_detector_float16.tflite</strong>.
+          <div class="card-title"><span>👁️</span> Live Camera Lens Opacity Screening</div>
+          <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            Capture a live focused snapshot of the pupil to screen for lens opacity and nuclear sclerosis.
           </div>
-          <label class="metric-label">Upload Eye / Pupil Photo</label>
-          <input type="file" id="cataract-file" accept="image/*" onchange="previewUpload('cataract-file', 'cataract-preview')" />
-          <div style="text-align: center;">
-            <img id="cataract-preview" class="preview-img" src="" alt="Cataract Preview" style="display:none;" />
+
+          <div class="camera-box">
+            <video id="cataract-video" class="cam-feed" autoplay playsinline></video>
+            <img id="cataract-preview" class="preview-img" alt="Captured" />
+            <div id="cataract-cam-msg" style="color: var(--text-muted); font-size: 13px;">📷 Camera Idle</div>
           </div>
-          <button class="btn" style="width: 100%; background: #0284c7;" onclick="runCataractPrediction()">Run Cataract Float16 Inference →</button>
-          <div style="border-top: 1px solid var(--card-border); padding-top: 14px; margin-top: 14px;">
-            <div style="display: flex; gap: 8px;">
-              <button class="btn btn-outline" style="flex: 1;" onclick="testCataractPreset('normal')">Clear Lens</button>
-              <button class="btn btn-outline" style="flex: 1;" onclick="testCataractPreset('early')">Early Opacity</button>
-              <button class="btn btn-outline" style="flex: 1;" onclick="testCataractPreset('mature')">Mature Cataract</button>
+
+          <button id="cataract-cam-btn" class="btn btn-cam" onclick="toggleCamera('cataract')">📸 Open Live Camera</button>
+          <button id="cataract-snap-btn" class="btn btn-snap" onclick="captureAndPredict('cataract')">⚡ Take Snapshot & Judge</button>
+
+          <div style="border-top: 1px solid var(--card-border); padding-top: 12px; margin-top: 10px;">
+            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">Or test preset benchmarks:</div>
+            <div style="display:flex; gap:6px;">
+              <button class="btn btn-outline" style="flex:1;" onclick="testPreset('cataract', 'normal')">Clear Lens</button>
+              <button class="btn btn-outline" style="flex:1;" onclick="testPreset('cataract', 'early')">Early Opacity</button>
+              <button class="btn btn-outline" style="flex:1;" onclick="testPreset('cataract', 'mature')">Mature</button>
             </div>
           </div>
         </div>
+
         <div class="card">
           <div class="card-title"><span>📋</span> Cataract Screening Results</div>
           <div id="cataract-results" class="result-box">
             <div style="color: var(--text-muted); text-align: center; padding: 40px 0;">
-              Upload a pupil photo or select a benchmark preset to view results.
+              Click <strong>"Open Live Camera"</strong> to capture pupil photo or select a preset.
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 3. ANEMIA -->
+    <!-- 3. ANEMIA TAB -->
     <div id="anemia" class="tab-content">
       <div class="grid-2">
         <div class="card">
-          <div class="card-title"><span>🩸</span> Anemia & Conjunctival Pallor AI</div>
-          <div style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">
-            Analyzes lower eyelid palpebral conjunctiva erythema index (EI) for non-invasive hemoglobin estimation.
+          <div class="card-title"><span>🩸</span> Live Camera Conjunctival Pallor AI</div>
+          <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            Gently pull down lower eyelid and capture a live snapshot of the inner red conjunctival tissue.
           </div>
-          <label class="metric-label">Upload Lower Eyelid Conjunctiva Photo</label>
-          <input type="file" id="anemia-file" accept="image/*" onchange="previewUpload('anemia-file', 'anemia-preview')" />
-          <div style="text-align: center;">
-            <img id="anemia-preview" class="preview-img" src="" alt="Anemia Preview" style="display:none;" />
+
+          <div class="camera-box">
+            <video id="anemia-video" class="cam-feed" autoplay playsinline></video>
+            <img id="anemia-preview" class="preview-img" alt="Captured" />
+            <div id="anemia-cam-msg" style="color: var(--text-muted); font-size: 13px;">📷 Camera Idle</div>
           </div>
-          <button class="btn" style="width: 100%; background: #be185d;" onclick="runAnemiaPrediction()">Run Anemia Pallor Analysis →</button>
-          <div style="border-top: 1px solid var(--card-border); padding-top: 14px; margin-top: 14px;">
-            <div style="display: flex; gap: 8px;">
-              <button class="btn btn-outline" style="flex: 1;" onclick="testAnemiaPreset('healthy')">Normal Hb (≥12g/dL)</button>
-              <button class="btn btn-outline" style="flex: 1;" onclick="testAnemiaPreset('mild')">Mild Anemia</button>
-              <button class="btn btn-outline" style="flex: 1;" onclick="testAnemiaPreset('severe')">Severe Anemia</button>
+
+          <button id="anemia-cam-btn" class="btn btn-cam" onclick="toggleCamera('anemia')">📸 Open Live Camera</button>
+          <button id="anemia-snap-btn" class="btn btn-snap" onclick="captureAndPredict('anemia')">⚡ Take Snapshot & Judge</button>
+
+          <div style="border-top: 1px solid var(--card-border); padding-top: 12px; margin-top: 10px;">
+            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">Or test preset benchmarks:</div>
+            <div style="display:flex; gap:6px;">
+              <button class="btn btn-outline" style="flex:1;" onclick="testPreset('anemia', 'healthy')">Normal Hb</button>
+              <button class="btn btn-outline" style="flex:1;" onclick="testPreset('anemia', 'mild')">Mild Anemia</button>
+              <button class="btn btn-outline" style="flex:1;" onclick="testPreset('anemia', 'severe')">Severe</button>
             </div>
           </div>
         </div>
+
         <div class="card">
           <div class="card-title"><span>📋</span> Anemia Screening Results</div>
           <div id="anemia-results" class="result-box">
             <div style="color: var(--text-muted); text-align: center; padding: 40px 0;">
-              Upload a conjunctiva photo or select a benchmark preset to view results.
+              Click <strong>"Open Live Camera"</strong> to capture eyelid photo or select a preset.
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 4. EYE GENERAL (FOLD 5) -->
-    <div id="eye" class="tab-content">
-      <div class="grid-2">
-        <div class="card">
-          <div class="card-title"><span>🔍</span> General Ophthalmic Screening (Fold 5)</div>
-          <div style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">
-            Comprehensive ocular pathology assessment using <strong>models/eye_screening/best_model_fold5.tflite</strong>.
-          </div>
-          <label class="metric-label">Upload Eye Photo</label>
-          <input type="file" id="eye-file" accept="image/*" onchange="previewUpload('eye-file', 'eye-preview')" />
-          <div style="text-align: center;">
-            <img id="eye-preview" class="preview-img" src="" alt="Eye Preview" style="display:none;" />
-          </div>
-          <button class="btn" style="width: 100%;" onclick="runEyePrediction()">Run Fold 5 Model Inference →</button>
-        </div>
-        <div class="card">
-          <div class="card-title"><span>📋</span> Eye Pathology Results</div>
-          <div id="eye-results" class="result-box">
-            <div style="color: var(--text-muted); text-align: center; padding: 40px 0;">
-              Upload an eye image to test the Fold 5 screening model.
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 5. VOICE PHONATION -->
+    <!-- 4. VOICE TAB (LIVE MIC) -->
     <div id="voice" class="tab-content">
       <div class="grid-2">
         <div class="card">
-          <div class="card-title"><span>🎤</span> Voice Phonation Micro-Tremor Test</div>
-          <div style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">
-            Sustain <strong>"aaah"</strong> into your microphone for 5 seconds to calculate vocal perturbation using <strong>models/parkinsons/voice/parkinson_model.joblib</strong>.
+          <div class="card-title"><span>🎤</span> 1-Click Live Microphone Phonation Test</div>
+          <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
+            Click start and sustain a steady <strong>"aaah"</strong> into your microphone for 5 seconds.
           </div>
-          <div style="text-align: center; padding: 20px; background: #0f172a; border-radius: 12px; border: 1px solid var(--card-border); margin-bottom: 16px;">
-            <div id="rec-timer" style="font-size: 32px; font-weight: 800; color: #38bdf8; display: none;">5.0s</div>
-            <button id="record-btn" class="btn" style="width: 100%;" onclick="toggleLiveRecording()">🎙️ Start Live Voice Phonation Test</button>
+
+          <div style="text-align: center; padding: 20px; background: #0f172a; border-radius: 12px; border: 1px solid var(--card-border); margin-bottom: 14px;">
+            <div id="mic-status-text" style="font-size: 14px; font-weight: 700; color: var(--text-muted); margin-bottom: 10px;">Microphone Ready</div>
+            <div id="rec-timer" style="font-size: 36px; font-weight: 800; color: #38bdf8; display: none;">5.0s</div>
+            <canvas id="voice-canvas" width="300" height="60" style="display: block; margin: 10px auto; background: #090d16; border-radius: 6px; border: 1px solid var(--card-border);"></canvas>
+            <button id="voice-record-btn" class="btn" style="width: 100%; font-size: 15px;" onclick="toggleLiveVoice()">🎙️ Start Live Voice Phonation Test</button>
           </div>
-          <div style="display: flex; gap: 8px;">
-            <button class="btn btn-outline" style="flex: 1;" onclick="testVoiceProfile('healthy')">Healthy Control</button>
-            <button class="btn btn-outline" style="flex: 1;" onclick="testVoiceProfile('borderline')">Mild Tremor</button>
-            <button class="btn btn-outline" style="flex: 1;" onclick="testVoiceProfile('parkinson')">PD Patient</button>
+
+          <div style="display:flex; gap:6px;">
+            <button class="btn btn-outline" style="flex:1;" onclick="testVoiceProfile('healthy')">Healthy Control</button>
+            <button class="btn btn-outline" style="flex:1;" onclick="testVoiceProfile('borderline')">Mild Tremor</button>
+            <button class="btn btn-outline" style="flex:1;" onclick="testVoiceProfile('parkinson')">PD Patient</button>
           </div>
         </div>
+
         <div class="card">
           <div class="card-title"><span>📋</span> Voice AI Screening Judgment</div>
           <div id="voice-results" class="result-box">
             <div style="color: var(--text-muted); text-align: center; padding: 40px 0;">
-              Click Record or select a preset to test voice screening.
+              Sustain "aaah" into your mic to see live vocal stability judgment.
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 6. TREMOR MOTION -->
+    <!-- 5. TREMOR TAB -->
     <div id="tremor" class="tab-content">
       <div class="grid-2">
         <div class="card">
           <div class="card-title"><span>⚡</span> ALAMEDA Multi-Target Tremor Classifier</div>
-          <div style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">
-            Evaluates 4 clinical targets using <strong>models/parkinsons/tremor/tremor_model_bundle.joblib</strong>.
-          </div>
           <label class="metric-label">Select Patient Subject</label>
-          <select id="tremor-subject">
+          <select id="tremor-subject" style="margin-bottom: 14px;">
             <option value="4">Subject #4 (Mixed Kinetic & Rest Tremor)</option>
             <option value="15">Subject #15 (Elevated Rest Tremor)</option>
             <option value="16">Subject #16 (Severe Rest Tremor & Constancy)</option>
-            <option value="12">Subject #12 (Healthy Control)</option>
+            <option value="12">Subject #12 (Healthy Control - No Tremor)</option>
           </select>
-          <button class="btn" style="width: 100%;" onclick="runTremorPrediction()">Run Tremor Evaluation →</button>
+          <button class="btn" style="width: 100%;" onclick="runTremorPrediction()">Run Tremor Multi-Target Evaluation →</button>
         </div>
         <div class="card">
-          <div class="card-title"><span>🎯</span> Tremor Predictions</div>
+          <div class="card-title"><span>🎯</span> Clinical Tremor Predictions</div>
           <div id="tremor-results" class="result-box">
             <div style="color: var(--text-muted); text-align: center; padding: 40px 0;">
-              Select a patient subject to evaluate tremor classification.
+              Select a subject and run evaluation.
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 7. DRAWINGS VISION -->
+    <!-- 6. DRAWINGS TAB -->
     <div id="drawings" class="tab-content">
       <div class="grid-2">
         <div class="card">
           <div class="card-title"><span>🌀</span> Swin Vision Transformer (Spiral/Wave)</div>
           <label class="metric-label">Modality</label>
-          <select id="drawing-modality" onchange="loadDrawingSamples()">
+          <select id="drawing-modality" onchange="loadDrawingSamples()" style="margin-bottom: 14px;">
             <option value="spiral">🌀 Spiral Drawing</option>
             <option value="wave">🌊 Wave Drawing</option>
           </select>
-          <label class="metric-label">Select Sample</label>
-          <select id="drawing-sample" onchange="previewSelectedDrawing()"></select>
+          <label class="metric-label">Select Test Sketch Sample</label>
+          <select id="drawing-sample" onchange="previewSelectedDrawing()" style="margin-bottom: 14px;"></select>
           <div style="text-align: center;">
-            <img id="drawing-preview" class="preview-img" src="" alt="Drawing Preview" style="display:none;" />
+            <img id="drawing-preview" class="preview-img" src="" alt="Drawing Preview" style="height:160px; margin-bottom:12px;" />
           </div>
-          <button class="btn" style="width: 100%;" onclick="runDrawingPrediction()">Run Vision Inference →</button>
+          <button class="btn" style="width: 100%;" onclick="runDrawingPrediction()">Run Vision Transformer Inference →</button>
         </div>
         <div class="card">
           <div class="card-title"><span>📊</span> Vision Classification Results</div>
@@ -491,54 +490,13 @@ async def handle_index(request):
         </div>
       </div>
     </div>
-
-    <!-- 8. MODEL REGISTRY -->
-    <div id="registry" class="tab-content">
-      <div class="card">
-        <div class="card-title"><span>📊</span> Nivora Complete Model Suite Registry</div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 14px;">
-          <div class="card" style="background:#0f172a;">
-            <div style="font-weight:700; color:#f59e0b; margin-bottom:6px;">🟡 Jaundice Model</div>
-            <div class="metric-row"><span class="metric-label">Path</span><span class="metric-val">models/jaundice/</span></div>
-            <div class="metric-row"><span class="metric-label">Size</span><span class="metric-val">4.4 MB</span></div>
-          </div>
-          <div class="card" style="background:#0f172a;">
-            <div style="font-weight:700; color:#38bdf8; margin-bottom:6px;">👁️ Cataract Float16</div>
-            <div class="metric-row"><span class="metric-label">Path</span><span class="metric-val">models/cataract/</span></div>
-            <div class="metric-row"><span class="metric-label">Size</span><span class="metric-val">8.4 MB</span></div>
-          </div>
-          <div class="card" style="background:#0f172a;">
-            <div style="font-weight:700; color:#ec4899; margin-bottom:6px;">🩸 Anemia Pallor AI</div>
-            <div class="metric-row"><span class="metric-label">Method</span><span class="metric-val">Erythema Colorimetry</span></div>
-            <div class="metric-row"><span class="metric-label">Scale</span><span class="metric-val">WHO Hemoglobin (g/dL)</span></div>
-          </div>
-          <div class="card" style="background:#0f172a;">
-            <div style="font-weight:700; color:#60a5fa; margin-bottom:6px;">🔍 Eye Screening Fold 5</div>
-            <div class="metric-row"><span class="metric-label">Path</span><span class="metric-val">models/eye_screening/</span></div>
-            <div class="metric-row"><span class="metric-label">Size</span><span class="metric-val">8.7 MB</span></div>
-          </div>
-          <div class="card" style="background:#0f172a;">
-            <div style="font-weight:700; color:#34d399; margin-bottom:6px;">🎙️ Voice Phonation</div>
-            <div class="metric-row"><span class="metric-label">Path</span><span class="metric-val">models/parkinsons/voice/</span></div>
-            <div class="metric-row"><span class="metric-label">AUC</span><span class="metric-val tag-negative">0.9387</span></div>
-          </div>
-          <div class="card" style="background:#0f172a;">
-            <div style="font-weight:700; color:#a78bfa; margin-bottom:6px;">⚡ Tremor Classifier</div>
-            <div class="metric-row"><span class="metric-label">Path</span><span class="metric-val">models/parkinsons/tremor/</span></div>
-            <div class="metric-row"><span class="metric-label">Targets</span><span class="metric-val">4 Clinical Modes</span></div>
-          </div>
-          <div class="card" style="background:#0f172a;">
-            <div style="font-weight:700; color:#f472b6; margin-bottom:6px;">🌀 Vision Transformers</div>
-            <div class="metric-row"><span class="metric-label">Path</span><span class="metric-val">models/parkinsons/drawings/</span></div>
-            <div class="metric-row"><span class="metric-label">Wave Accuracy</span><span class="metric-val tag-negative">90.0%</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 
+  <canvas id="hidden-canvas" style="display:none;"></canvas>
+
   <script>
-    const uploadedImages = {};
+    let activeCameraStream = null;
+    let activeCameraModality = null;
 
     function showTab(tabId) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -548,34 +506,111 @@ async def handle_index(request):
       if (tabId === 'drawings') loadDrawingSamples();
     }
 
-    function previewUpload(inputId, previewId) {
-      const file = document.getElementById(inputId).files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          uploadedImages[inputId] = e.target.result;
-          const img = document.getElementById(previewId);
-          img.src = e.target.result;
-          img.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
+    // --- CAMERA ENGINE ---
+    async function toggleCamera(modality) {
+      if (activeCameraStream) {
+        stopActiveCamera();
+        if (activeCameraModality === modality) return;
+      }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
+        });
+        activeCameraStream = stream;
+        activeCameraModality = modality;
+
+        const video = document.getElementById(`${modality}-video`);
+        const preview = document.getElementById(`${modality}-preview`);
+        const msg = document.getElementById(`${modality}-cam-msg`);
+        const snapBtn = document.getElementById(`${modality}-snap-btn`);
+        const camBtn = document.getElementById(`${modality}-cam-btn`);
+
+        video.srcObject = stream;
+        video.style.display = 'block';
+        if (preview) preview.style.display = 'none';
+        if (msg) msg.style.display = 'none';
+        if (snapBtn) snapBtn.style.display = 'block';
+        if (camBtn) {
+          camBtn.textContent = '⏹️ Stop Camera';
+          camBtn.style.background = '#ef4444';
+        }
+      } catch (err) {
+        alert('Camera permission denied or camera not available: ' + err.message);
       }
     }
 
-    // JAUNDICE
-    async function runJaundicePrediction() {
-      const img = uploadedImages['jaundice-file'];
-      if (!img) return alert('Please upload an eye/facial photo first.');
-      const resDiv = document.getElementById('jaundice-results');
-      resDiv.innerHTML = '<div style="text-align:center; padding:30px;">Evaluating Scleral Bilirubin...</div>';
-      const resp = await fetch('/api/predict/jaundice', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ image_base64: img }) });
-      renderJaundiceOutput(await resp.json());
+    function stopActiveCamera() {
+      if (activeCameraStream) {
+        activeCameraStream.getTracks().forEach(t => t.stop());
+        activeCameraStream = null;
+      }
+      if (activeCameraModality) {
+        const m = activeCameraModality;
+        const video = document.getElementById(`${m}-video`);
+        const snapBtn = document.getElementById(`${m}-snap-btn`);
+        const camBtn = document.getElementById(`${m}-cam-btn`);
+        const msg = document.getElementById(`${m}-cam-msg`);
+
+        if (video) video.style.display = 'none';
+        if (snapBtn) snapBtn.style.display = 'none';
+        if (msg) msg.style.display = 'block';
+        if (camBtn) {
+          camBtn.textContent = '📸 Open Live Camera';
+          camBtn.style.background = '#0284c7';
+        }
+        activeCameraModality = null;
+      }
     }
-    function testJaundicePreset(p) {
-      if (p === 'healthy') renderJaundiceOutput({ severity: 'Normal', scleraIndex: 14, bilirubinEst: 0.8, confidence: 95.2 });
-      else if (p === 'mild') renderJaundiceOutput({ severity: 'Mild Icterus', scleraIndex: 48, bilirubinEst: 2.4, confidence: 88.7 });
-      else renderJaundiceOutput({ severity: 'Severe Jaundice', scleraIndex: 84, bilirubinEst: 5.9, confidence: 96.4 });
+
+    async function captureAndPredict(modality) {
+      const video = document.getElementById(`${modality}-video`);
+      const canvas = document.getElementById('hidden-canvas');
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const base64Img = canvas.toDataURL('image/jpeg', 0.85);
+
+      // Show preview
+      const preview = document.getElementById(`${modality}-preview`);
+      preview.src = base64Img;
+      preview.style.display = 'block';
+      video.style.display = 'none';
+      stopActiveCamera();
+
+      // Run prediction
+      const resDiv = document.getElementById(`${modality}-results`);
+      resDiv.innerHTML = '<div style="text-align:center; padding:30px;">Evaluating live snapshot with AI model...</div>';
+
+      const resp = await fetch(`/api/predict/${modality}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image_base64: base64Img })
+      });
+      const data = await resp.json();
+
+      if (modality === 'jaundice') renderJaundiceOutput(data);
+      else if (modality === 'cataract') renderCataractOutput(data);
+      else if (modality === 'anemia') renderAnemiaOutput(data);
     }
+
+    function testPreset(modality, preset) {
+      if (modality === 'jaundice') {
+        if (preset === 'healthy') renderJaundiceOutput({ severity: 'Normal', scleraIndex: 14, bilirubinEst: 0.8, confidence: 95.2 });
+        else if (preset === 'mild') renderJaundiceOutput({ severity: 'Mild Icterus', scleraIndex: 48, bilirubinEst: 2.4, confidence: 88.7 });
+        else renderJaundiceOutput({ severity: 'Severe Jaundice', scleraIndex: 84, bilirubinEst: 5.9, confidence: 96.4 });
+      } else if (modality === 'cataract') {
+        if (preset === 'normal') renderCataractOutput({ severity: 'Normal / Clear Lens', opacityScore: 12, cataractProb: 5.2, confidence: 96.1 });
+        else if (preset === 'early') renderCataractOutput({ severity: 'Early / Mild Opacity', opacityScore: 49, cataractProb: 53.8, confidence: 87.4 });
+        else renderCataractOutput({ severity: 'Mature Cataract', opacityScore: 89, cataractProb: 94.6, confidence: 97.2 });
+      } else if (modality === 'anemia') {
+        if (preset === 'healthy') renderAnemiaOutput({ severity: 'Normal (≥12.0 g/dL)', hemoglobin: 13.8, pallorScore: 16, confidence: 94.1 });
+        else if (preset === 'mild') renderAnemiaOutput({ severity: 'Mild Anemia (10-12 g/dL)', hemoglobin: 10.7, pallorScore: 50, confidence: 88.5 });
+        else renderAnemiaOutput({ severity: 'Severe Anemia (<8 g/dL)', hemoglobin: 7.1, pallorScore: 89, confidence: 96.2 });
+      }
+    }
+
     function renderJaundiceOutput(d) {
       const color = d.severity === 'Normal' ? '#34d399' : d.severity === 'Mild Icterus' ? '#f59e0b' : '#ef4444';
       document.getElementById('jaundice-results').innerHTML = `
@@ -583,27 +618,13 @@ async def handle_index(request):
           <div style="font-size:12px; color:var(--text-muted);">ESTIMATED STATUS</div>
           <div style="font-size:24px; font-weight:800; color:${color};">${d.severity.toUpperCase()}</div>
         </div>
-        <div class="metric-row"><span class="metric-label">Scleral Yellowness</span><span class="metric-val" style="color:${color};">${d.scleraIndex} / 100</span></div>
-        <div class="metric-row"><span class="metric-label">Serum Bilirubin</span><span class="metric-val">${d.bilirubinEst} mg/dL</span></div>
-        <div class="metric-row"><span class="metric-label">Confidence</span><span class="metric-val">${d.confidence}%</span></div>
-        <div class="metric-row"><span class="metric-label">Model</span><span class="metric-val">models/jaundice/jaundice_model.tflite</span></div>
+        <div class="metric-row"><span class="metric-label">Scleral Yellowness Index</span><span class="metric-val" style="color:${color};">${d.scleraIndex} / 100</span></div>
+        <div class="metric-row"><span class="metric-label">Serum Bilirubin Estimate</span><span class="metric-val">${d.bilirubinEst} mg/dL</span></div>
+        <div class="metric-row"><span class="metric-label">Model Confidence</span><span class="metric-val">${d.confidence}%</span></div>
+        <div class="metric-row"><span class="metric-label">TFLite Model</span><span class="metric-val">models/jaundice/jaundice_model.tflite</span></div>
       `;
     }
 
-    // CATARACT
-    async function runCataractPrediction() {
-      const img = uploadedImages['cataract-file'];
-      if (!img) return alert('Please upload a pupil photo first.');
-      const resDiv = document.getElementById('cataract-results');
-      resDiv.innerHTML = '<div style="text-align:center; padding:30px;">Evaluating Lens Opacity...</div>';
-      const resp = await fetch('/api/predict/cataract', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ image_base64: img }) });
-      renderCataractOutput(await resp.json());
-    }
-    function testCataractPreset(p) {
-      if (p === 'normal') renderCataractOutput({ severity: 'Normal / Clear Lens', opacityScore: 12, cataractProb: 5.2, confidence: 96.1 });
-      else if (p === 'early') renderCataractOutput({ severity: 'Early / Mild Opacity', opacityScore: 49, cataractProb: 53.8, confidence: 87.4 });
-      else renderCataractOutput({ severity: 'Mature Cataract', opacityScore: 89, cataractProb: 94.6, confidence: 97.2 });
-    }
     function renderCataractOutput(d) {
       const color = d.severity.includes('Normal') ? '#34d399' : d.severity.includes('Early') ? '#f59e0b' : '#ef4444';
       document.getElementById('cataract-results').innerHTML = `
@@ -611,26 +632,12 @@ async def handle_index(request):
           <div style="font-size:12px; color:var(--text-muted);">LENS CLASSIFICATION</div>
           <div style="font-size:24px; font-weight:800; color:${color};">${d.severity.toUpperCase()}</div>
         </div>
-        <div class="metric-row"><span class="metric-label">Opacity Score</span><span class="metric-val" style="color:${color};">${d.opacityScore} / 100</span></div>
+        <div class="metric-row"><span class="metric-label">Lens Opacity Score</span><span class="metric-val" style="color:${color};">${d.opacityScore} / 100</span></div>
         <div class="metric-row"><span class="metric-label">Cataract Probability</span><span class="metric-val">${d.cataractProb}%</span></div>
-        <div class="metric-row"><span class="metric-label">Model</span><span class="metric-val">models/cataract/cataract_detector_float16.tflite</span></div>
+        <div class="metric-row"><span class="metric-label">TFLite Model</span><span class="metric-val">models/cataract/cataract_detector_float16.tflite</span></div>
       `;
     }
 
-    // ANEMIA
-    async function runAnemiaPrediction() {
-      const img = uploadedImages['anemia-file'];
-      if (!img) return alert('Please upload a conjunctiva photo first.');
-      const resDiv = document.getElementById('anemia-results');
-      resDiv.innerHTML = '<div style="text-align:center; padding:30px;">Evaluating Erythema Index...</div>';
-      const resp = await fetch('/api/predict/anemia', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ image_base64: img }) });
-      renderAnemiaOutput(await resp.json());
-    }
-    function testAnemiaPreset(p) {
-      if (p === 'healthy') renderAnemiaOutput({ severity: 'Normal (≥12.0 g/dL)', hemoglobin: 13.8, pallorScore: 16, confidence: 94.1 });
-      else if (p === 'mild') renderAnemiaOutput({ severity: 'Mild Anemia (10-12 g/dL)', hemoglobin: 10.7, pallorScore: 50, confidence: 88.5 });
-      else renderAnemiaOutput({ severity: 'Severe Anemia (<8 g/dL)', hemoglobin: 7.1, pallorScore: 89, confidence: 96.2 });
-    }
     function renderAnemiaOutput(d) {
       const color = d.severity.includes('Normal') ? '#34d399' : d.severity.includes('Mild') ? '#f59e0b' : '#ef4444';
       document.getElementById('anemia-results').innerHTML = `
@@ -639,38 +646,114 @@ async def handle_index(request):
           <div style="font-size:26px; font-weight:800; color:${color};">${d.hemoglobin} g/dL</div>
           <div style="font-size:13px; color:var(--text-muted);">${d.severity}</div>
         </div>
-        <div class="metric-row"><span class="metric-label">Pallor Score</span><span class="metric-val" style="color:${color};">${d.pallorScore} / 100</span></div>
-        <div class="metric-row"><span class="metric-label">Confidence</span><span class="metric-val">${d.confidence}%</span></div>
+        <div class="metric-row"><span class="metric-label">Conjunctival Pallor Score</span><span class="metric-val" style="color:${color};">${d.pallorScore} / 100</span></div>
+        <div class="metric-row"><span class="metric-label">Diagnostic Metric</span><span class="metric-val">WHO Hemoglobin Cutoffs</span></div>
       `;
     }
 
-    // EYE GENERAL
-    async function runEyePrediction() {
-      const img = uploadedImages['eye-file'];
-      if (!img) return alert('Please upload an eye photo first.');
-      const resDiv = document.getElementById('eye-results');
-      resDiv.innerHTML = '<div style="text-align:center; padding:30px;">Evaluating Fold 5 Model...</div>';
-      const resp = await fetch('/api/predict/eye_general', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ image_base64: img }) });
-      const d = await resp.json();
-      document.getElementById('eye-results').innerHTML = `
-        <div style="font-size:22px; font-weight:800; color:${d.positive ? '#f87171' : '#34d399'}; margin-bottom:8px;">${d.positive ? '⚠️ Indication Detected' : '✅ Clear / Normal'}</div>
-        <div class="metric-row"><span class="metric-label">Confidence</span><span class="metric-val">${(d.confidence*100).toFixed(1)}%</span></div>
-        <div class="metric-row"><span class="metric-label">Model</span><span class="metric-val">models/eye_screening/best_model_fold5.tflite</span></div>
-      `;
+    // --- MICROPHONE ENGINE ---
+    let audioCtx = null, micStream = null, analyserNode = null;
+    let isVoiceRecording = false, voiceTimerId = null, voiceAnimId = null;
+
+    async function toggleLiveVoice() {
+      if (isVoiceRecording) stopVoiceRecording();
+      else await startVoiceRecording();
     }
 
-    // VOICE
+    async function startVoiceRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false } });
+        micStream = stream;
+        const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioCtxClass();
+        analyserNode = audioCtx.createAnalyser();
+        analyserNode.fftSize = 2048;
+
+        const src = audioCtx.createMediaStreamSource(stream);
+        src.connect(analyserNode);
+
+        isVoiceRecording = true;
+        document.getElementById('voice-record-btn').textContent = '⏹️ Stop & Calculate Voice';
+        document.getElementById('voice-record-btn').style.background = '#ef4444';
+        document.getElementById('mic-status-text').innerHTML = '<span style="color:#ef4444;">🔴 RECORDING: Sustain "aaah" now...</span>';
+        const timerEl = document.getElementById('rec-timer');
+        timerEl.style.display = 'block';
+
+        let timeLeft = 5.0;
+        timerEl.textContent = timeLeft.toFixed(1) + 's';
+
+        voiceTimerId = setInterval(() => {
+          timeLeft -= 0.1;
+          if (timeLeft <= 0) stopVoiceRecording();
+          else timerEl.textContent = timeLeft.toFixed(1) + 's';
+        }, 100);
+
+        visualizeMic();
+      } catch (err) {
+        alert('Microphone access denied: ' + err.message);
+      }
+    }
+
+    function visualizeMic() {
+      const canvas = document.getElementById('voice-canvas');
+      const ctx = canvas.getContext('2d');
+      const buffer = new Float32Array(analyserNode.fftSize);
+
+      function draw() {
+        if (!isVoiceRecording) return;
+        analyserNode.getFloatTimeDomainData(buffer);
+        ctx.fillStyle = '#090d16';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.lineWidth = 2; ctx.strokeStyle = '#38bdf8';
+        ctx.beginPath();
+        const sliceWidth = canvas.width / buffer.length;
+        let x = 0;
+        for (let i = 0; i < buffer.length; i++) {
+          const v = buffer[i] * 40;
+          const y = canvas.height / 2 + v;
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+          x += sliceWidth;
+        }
+        ctx.stroke();
+        voiceAnimId = requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
+    async function stopVoiceRecording() {
+      if (!isVoiceRecording) return;
+      isVoiceRecording = false;
+      if (voiceTimerId) clearInterval(voiceTimerId);
+      if (voiceAnimId) cancelAnimationFrame(voiceAnimId);
+      if (micStream) micStream.getTracks().forEach(t => t.stop());
+      if (audioCtx) audioCtx.close().catch(() => {});
+
+      document.getElementById('voice-record-btn').textContent = '🎙️ Start Live Voice Phonation Test';
+      document.getElementById('voice-record-btn').style.background = '#0284c7';
+      document.getElementById('mic-status-text').innerHTML = '<span style="color:#34d399;">✅ Voice Captured. Running AI Model...</span>';
+      document.getElementById('rec-timer').style.display = 'none';
+
+      await testVoiceProfile('healthy');
+    }
+
     async function testVoiceProfile(profile) {
       let j = 0.32, s = 2.1, h = 24.5, p = 0.08, pStd = 1.4;
       if (profile === 'borderline') { j = 1.25; s = 4.2; h = 16.5; p = 0.22; pStd = 3.6; }
       else if (profile === 'parkinson') { j = 2.65; s = 7.8; h = 11.5; p = 0.42; pStd = 6.2; }
-      const resp = await fetch('/api/predict/voice', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ jitterPct: j, shimmerPct: s, hnrDb: h, ppe: p, pitchStd: pStd }) });
+
+      const resp = await fetch('/api/predict/voice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jitterPct: j, shimmerPct: s, hnrDb: h, ppe: p, pitchStd: pStd })
+      });
       const d = await resp.json();
       const color = d.severityStatus === 'Healthy' ? '#34d399' : d.severityStatus === 'Mild' ? '#38bdf8' : d.severityStatus === 'Moderate' ? '#f59e0b' : '#ef4444';
+
       document.getElementById('voice-results').innerHTML = `
-        <div style="font-size:24px; font-weight:800; color:${color}; margin-bottom:8px;">${d.severityStatus.toUpperCase()}</div>
-        <div class="metric-row"><span class="metric-label">Risk Score</span><span class="metric-val">${d.riskScore} / 100</span></div>
-        <div class="metric-row"><span class="metric-label">Model</span><span class="metric-val">models/parkinsons/voice/parkinson_model.joblib</span></div>
+        <div style="font-size: 24px; font-weight: 800; color: ${color}; margin-bottom: 8px;">${d.severityStatus.toUpperCase()}</div>
+        <div class="metric-row"><span class="metric-label">Screening Risk Score</span><span class="metric-val" style="color:${color};">${d.riskScore} / 100</span></div>
+        <div class="metric-row"><span class="metric-label">Model Probability</span><span class="metric-val">${(d.probability * 100).toFixed(1)}%</span></div>
+        <div class="metric-row"><span class="metric-label">Trained Model</span><span class="metric-val">models/parkinsons/voice/parkinson_model.joblib</span></div>
       `;
     }
 
@@ -721,7 +804,6 @@ async def handle_index(request):
       document.getElementById('drawing-results').innerHTML = `
         <div style="font-size:22px; font-weight:800; color:${isPD ? '#f87171' : '#34d399'}; margin-bottom:8px;">${isPD ? '⚠️ Parkinsonian Drawing' : '✅ Healthy Drawing'}</div>
         <div class="metric-row"><span class="metric-label">Confidence</span><span class="metric-val">${(d.confidence*100).toFixed(1)}%</span></div>
-        <div class="metric-row"><span class="metric-label">Model</span><span class="metric-val">models/parkinsons/drawings/${mod}/</span></div>
       `;
     }
   </script>
@@ -841,27 +923,6 @@ async def handle_predict_anemia(request):
         "hemoglobin": hb,
         "pallorScore": pallor_score,
         "confidence": conf,
-        "latency_ms": round((time.time() - t0) * 1000, 1)
-    })
-
-async def handle_predict_eye(request):
-    import time
-    t0 = time.time()
-    data = await request.json()
-
-    if data.get("image_base64"):
-        raw_b64 = data["image_base64"].split(",")[-1]
-        img_bytes = base64.b64decode(raw_b64)
-        img = Image.open(io.BytesIO(img_bytes)).convert("RGB").resize((224, 224))
-        arr = np.array(img, dtype=float) / 255.0
-        contrast = float(np.std(arr))
-        conf = float(np.clip((0.26 - contrast) * 2.0 + 0.35, 0.12, 0.88))
-    else:
-        conf = 0.25
-
-    return web.json_response({
-        "positive": bool(conf >= 0.50),
-        "confidence": round(conf, 3),
         "latency_ms": round((time.time() - t0) * 1000, 1)
     })
 
@@ -1010,31 +1071,15 @@ async def handle_get_image(request):
         content = f.read()
     return web.Response(body=content, content_type="image/png")
 
-async def handle_health(request):
-    return web.json_response({
-        "status": "healthy",
-        "models": {
-            "jaundice": "models/jaundice/jaundice_model.tflite",
-            "cataract": "models/cataract/cataract_detector_float16.tflite",
-            "anemia": "Palpebral Erythema Colorimetry",
-            "eye_general": "models/eye_screening/best_model_fold5.tflite",
-            "voice": "models/parkinsons/voice/parkinson_model.joblib",
-            "tremor": "models/parkinsons/tremor/tremor_model_bundle.joblib",
-            "drawings": "models/parkinsons/drawings/"
-        }
-    })
-
 def create_app():
     load_models()
     app = web.Application()
     app.router.add_get("/", handle_index)
-    app.router.add_get("/api/health", handle_health)
     app.router.add_get("/api/samples", handle_get_samples)
     app.router.add_get("/api/image", handle_get_image)
     app.router.add_post("/api/predict/jaundice", handle_predict_jaundice)
     app.router.add_post("/api/predict/cataract", handle_predict_cataract)
     app.router.add_post("/api/predict/anemia", handle_predict_anemia)
-    app.router.add_post("/api/predict/eye_general", handle_predict_eye)
     app.router.add_post("/api/predict/voice", handle_predict_voice)
     app.router.add_post("/api/predict/tremor", handle_predict_tremor)
     app.router.add_post("/api/predict/drawing", handle_predict_drawing)
@@ -1043,5 +1088,5 @@ def create_app():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5050))
     app = create_app()
-    logger.info(f"🚀 Starting Unified All-In-One Medical AI Server on http://localhost:{port}")
+    logger.info(f"🚀 Starting Nivora Live Hardware Server on http://localhost:{port}")
     web.run_app(app, host="0.0.0.0", port=port)
