@@ -41,3 +41,13 @@ example
 # generated native folders
 /ios
 /android
+
+# Python & ML
+.venv*/
+**/.venv/
+**/.venv*/
+__pycache__/
+**/__pycache__/
+*.pyc
+.cache/
+parkinsons-drawings.zip
